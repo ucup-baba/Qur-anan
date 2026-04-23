@@ -1,0 +1,130 @@
+/* ============================================
+   BAITUL QOWWAM — DESIGN TOKENS
+   Warm neutral · Cream · Coklat · Emas
+   ============================================ */
+
+:root {
+  /* ─── COLORS — Neutral (warm, paper-like) ─── */
+  --bq-paper-50:  #FBF8F2;   /* lightest cream — page bg */
+  --bq-paper-100: #F5F0E6;   /* card bg, hover */
+  --bq-paper-200: #EADFCC;   /* borders, dividers */
+  --bq-paper-300: #D9C9AE;   /* muted borders */
+  --bq-paper-400: #A89478;   /* secondary text */
+  --bq-paper-500: #6B5A44;   /* body text muted */
+  --bq-paper-600: #4A3E2F;   /* body text */
+  --bq-paper-700: #2E2619;   /* headings */
+  --bq-paper-800: #1C170F;   /* darkest */
+
+  /* ─── COLORS — Primary (coklat hangat) ─── */
+  --bq-brown-50:  #F7F0E4;
+  --bq-brown-100: #E8D6B8;
+  --bq-brown-200: #C8A876;
+  --bq-brown-300: #A07C4A;
+  --bq-brown-400: #7A5A30;   /* primary */
+  --bq-brown-500: #5C4322;   /* primary hover */
+  --bq-brown-600: #3F2E17;
+
+  /* ─── COLORS — Accent (emas) ─── */
+  --bq-gold-50:   #FBF4E0;
+  --bq-gold-100:  #F2E1B0;
+  --bq-gold-200:  #E5C77A;
+  --bq-gold-300:  #C9A24E;   /* gold accent */
+  --bq-gold-400:  #A8842E;
+  --bq-gold-500:  #806318;
+
+  /* ─── COLORS — Semantic ─── */
+  --bq-success:   #4A7C3B;
+  --bq-warning:   #B8832E;
+  --bq-error:     #9A3F2E;
+  --bq-info:      #3A6B7C;
+
+  /* ─── TYPOGRAPHY ─── */
+  --bq-font-sans:    'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --bq-font-serif:   'Fraunces', Georgia, serif;
+  --bq-font-arabic:  'Amiri Quran', 'Amiri', 'Scheherazade New', serif;
+  --bq-font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  /* Type scale (desktop; scales down on mobile) */
+  --bq-text-xs:   12px;
+  --bq-text-sm:   14px;
+  --bq-text-base: 16px;
+  --bq-text-md:   18px;
+  --bq-text-lg:   22px;
+  --bq-text-xl:   28px;
+  --bq-text-2xl:  36px;
+  --bq-text-3xl:  48px;
+  --bq-text-4xl:  64px;
+
+  /* Arabic scale — always larger than Latin */
+  --bq-ar-sm:     24px;
+  --bq-ar-base:   32px;
+  --bq-ar-md:     40px;
+  --bq-ar-lg:     56px;
+  --bq-ar-xl:     72px;
+
+  /* Leading */
+  --bq-leading-tight:  1.15;
+  --bq-leading-snug:   1.35;
+  --bq-leading-normal: 1.55;
+  --bq-leading-arabic: 2.0;
+
+  /* ─── SPACING — 4px base ─── */
+  --bq-space-1:  4px;
+  --bq-space-2:  8px;
+  --bq-space-3:  12px;
+  --bq-space-4:  16px;
+  --bq-space-5:  20px;
+  --bq-space-6:  24px;
+  --bq-space-8:  32px;
+  --bq-space-10: 40px;
+  --bq-space-12: 48px;
+  --bq-space-16: 64px;
+  --bq-space-20: 80px;
+
+  /* ─── RADIUS ─── */
+  --bq-radius-xs: 4px;
+  --bq-radius-sm: 6px;
+  --bq-radius-md: 10px;
+  --bq-radius-lg: 16px;
+  --bq-radius-xl: 24px;
+  --bq-radius-full: 9999px;
+
+  /* ─── SHADOWS — soft, low-saturation ─── */
+  --bq-shadow-xs: 0 1px 2px rgba(46, 38, 25, 0.05);
+  --bq-shadow-sm: 0 2px 6px rgba(46, 38, 25, 0.06), 0 1px 2px rgba(46, 38, 25, 0.04);
+  --bq-shadow-md: 0 6px 16px rgba(46, 38, 25, 0.08), 0 2px 4px rgba(46, 38, 25, 0.04);
+  --bq-shadow-lg: 0 16px 40px rgba(46, 38, 25, 0.10), 0 4px 10px rgba(46, 38, 25, 0.06);
+  --bq-shadow-inset: inset 0 1px 2px rgba(46, 38, 25, 0.06);
+
+  /* ─── MOTION ─── */
+  --bq-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --bq-dur-fast: 120ms;
+  --bq-dur-med: 220ms;
+  --bq-dur-slow: 380ms;
+}
+
+/* ─── BASE ─── */
+* { box-sizing: border-box; }
+
+.bq-root {
+  font-family: var(--bq-font-sans);
+  color: var(--bq-paper-700);
+  background: var(--bq-paper-50);
+  font-size: var(--bq-text-base);
+  line-height: var(--bq-leading-normal);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+.bq-arabic {
+  font-family: var(--bq-font-arabic);
+  direction: rtl;
+  line-height: var(--bq-leading-arabic);
+  font-feature-settings: 'liga', 'calt';
+}
+
+.bq-serif { font-family: var(--bq-font-serif); font-optical-sizing: auto; }
+
+/* utility scroll hide inside artboards */
+.bq-noscroll::-webkit-scrollbar { display: none; }
+.bq-noscroll { scrollbar-width: none; }
