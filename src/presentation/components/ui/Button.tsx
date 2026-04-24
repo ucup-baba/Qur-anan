@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../icons';
+import { Icon, type AppIcon } from '../icons';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'gold' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -7,8 +7,8 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  icon?: React.ReactNode;
-  iconRight?: React.ReactNode;
+  icon?: AppIcon;
+  iconRight?: AppIcon;
 }
 
 const sizes: Record<ButtonSize, React.CSSProperties> = {
@@ -52,8 +52,8 @@ export const Button: React.FC<ButtonProps> = ({
     {...rest}
     style={{ ...baseStyle, ...sizes[size], ...variants[variant], ...style }}
   >
-    {icon && <Icon d={icon} size={size === 'sm' ? 14 : 16} />}
+    {icon && <Icon d={icon} size={size === 'sm' ? 14 : 16} stroke={1.75} />}
     {children}
-    {iconRight && <Icon d={iconRight} size={size === 'sm' ? 14 : 16} />}
+    {iconRight && <Icon d={iconRight} size={size === 'sm' ? 14 : 16} stroke={1.75} />}
   </button>
 );

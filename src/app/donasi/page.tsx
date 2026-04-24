@@ -1,7 +1,5 @@
 import React from 'react';
-import { Card } from '@/presentation/components/ui/Card';
-import { Button } from '@/presentation/components/ui/Button';
-import { Icon, Icons } from '@/presentation/components/icons';
+import { DonationCard } from '@/presentation/components/yayasan/DonationCard';
 
 export const metadata = {
   title: 'Donasi - Qur-anan',
@@ -10,52 +8,50 @@ export const metadata = {
 
 export default function DonasiPage() {
   return (
-    <div className="min-h-[80vh] py-12 md:py-20 px-4 md:px-6 max-w-[800px] mx-auto">
-      <div className="text-center mb-10 md:mb-14">
-        <h1 className="bq-serif text-3xl md:text-5xl text-[var(--bq-paper-800)] mb-4 font-medium tracking-[-0.5px]">Mari Berbagi</h1>
-        <p className="text-[var(--bq-paper-500)] text-sm md:text-base max-w-lg mx-auto">
-          "Perumpamaan orang yang menginfakkan hartanya di jalan Allah seperti sebutir biji yang menumbuhkan tujuh tangkai, pada setiap tangkai ada seratus biji." (Al-Baqarah: 261)
+    <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8 md:py-10">
+      <div className="mb-6 md:mb-8">
+        <div className="text-[11px] tracking-[1.4px] uppercase text-[var(--bq-gold-400)] font-semibold mb-1.5">
+          Donasi
+        </div>
+        <h1 className="bq-serif text-3xl md:text-[40px] font-medium m-0 mb-2 text-[var(--bq-paper-800)] tracking-[-0.5px]">
+          Program yang membutuhkan dukunganmu
+        </h1>
+        <p className="text-sm md:text-base text-[var(--bq-paper-500)] m-0 max-w-[600px] leading-relaxed">
+          Setiap rupiah dialirkan langsung ke penerima manfaat. Kami publikasikan laporan bulanan.
         </p>
       </div>
 
-      <Card className="p-6 md:p-10 mb-8 overflow-hidden relative">
-        <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-[var(--bq-gold-50)] opacity-50 pointer-events-none" />
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-[var(--bq-brown-500)] text-white flex items-center justify-center">
-              <Icon d={Icons.Heart} size={20} />
-            </div>
-            <h2 className="text-xl md:text-2xl font-bold text-[var(--bq-paper-800)]">Rekening Donasi</h2>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        <DonationCard title="Renovasi Asrama Panti" description="Memperbaiki 12 kamar asrama untuk 48 santri yatim di Cilegon." raised={68500000} target={120000000} donors={214} urgent />
+        <DonationCard title="Beasiswa Tahfidz 2026" description="Biaya hidup & pendidikan 30 santri penghafal Qur'an selama 1 tahun." raised={145000000} target={200000000} donors={387} />
+        <DonationCard title="Kitab & Al-Qur'an" description="Pengadaan 500 mushaf dan kitab tafsir untuk perpustakaan pesantren." raised={12300000} target={40000000} donors={89} />
+        <DonationCard title="Infaq Bulanan" description="Donasi rutin untuk operasional panti asuhan & pesantren." raised={8500000} target={25000000} donors={142} />
+      </div>
 
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl border border-[var(--bq-paper-200)] bg-[var(--bq-paper-50)] flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-medium text-[var(--bq-paper-500)] mb-1 uppercase tracking-wider">Bank Syariah Indonesia (BSI)</p>
-                <p className="text-2xl md:text-3xl font-mono font-bold text-[var(--bq-paper-800)] tracking-widest">7123 4567 89</p>
-                <p className="text-sm text-[var(--bq-paper-600)] mt-1">a.n. Yayasan Baitul Qowwam</p>
-              </div>
-              <Button variant="outline" icon={Icons.Copy}>Salin No. Rekening</Button>
-            </div>
-            
-            <div className="p-4 rounded-xl border border-[var(--bq-paper-200)] bg-[var(--bq-paper-50)] flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-medium text-[var(--bq-paper-500)] mb-1 uppercase tracking-wider">Bank Muamalat</p>
-                <p className="text-2xl md:text-3xl font-mono font-bold text-[var(--bq-paper-800)] tracking-widest">3010 9876 54</p>
-                <p className="text-sm text-[var(--bq-paper-600)] mt-1">a.n. Yayasan Baitul Qowwam</p>
-              </div>
-              <Button variant="outline" icon={Icons.Copy}>Salin No. Rekening</Button>
-            </div>
-          </div>
+      {/* Transfer info */}
+      <div className="bg-[var(--bq-paper-100)] border border-[var(--bq-paper-200)] rounded-2xl p-5 md:p-7">
+        <div className="text-[11px] tracking-[1.4px] uppercase text-[var(--bq-gold-400)] font-semibold mb-2">
+          Transfer Manual
         </div>
-      </Card>
-
-      <div className="text-center">
-        <p className="text-sm text-[var(--bq-paper-500)] mb-4">
-          Untuk konfirmasi donasi atau informasi lebih lanjut, silakan hubungi admin kami.
-        </p>
-        <Button variant="primary" icon={Icons.Check}>Konfirmasi Donasi via WhatsApp</Button>
+        <h3 className="bq-serif text-2xl font-medium m-0 mb-4 text-[var(--bq-paper-800)]">
+          Rekening Yayasan
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+          {[
+            { bank: 'Bank Syariah Indonesia', no: '7123 4567 89', name: 'Yayasan Baitul Qowwam' },
+            { bank: 'Bank Muamalat', no: '301 0012 345', name: 'Yayasan Baitul Qowwam' },
+            { bank: 'BCA', no: '234 567 8901', name: 'Yayasan Baitul Qowwam' },
+          ].map(b => (
+            <div key={b.bank} className="p-4 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] rounded-xl">
+              <div className="text-[11px] text-[var(--bq-paper-500)] mb-1 font-semibold">{b.bank}</div>
+              <div className="text-lg font-mono font-semibold text-[var(--bq-paper-800)] mb-0.5">{b.no}</div>
+              <div className="text-xs text-[var(--bq-paper-500)]">a.n. {b.name}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 text-xs text-[var(--bq-paper-500)] leading-relaxed">
+          Setelah transfer, mohon konfirmasi via WhatsApp <strong>0812-3456-7890</strong> dengan menyertakan bukti transfer agar kami catat sebagai donatur.
+        </div>
       </div>
     </div>
   );

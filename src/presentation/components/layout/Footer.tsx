@@ -8,9 +8,9 @@ const footerLinks = {
 };
 
 export const Footer: React.FC = () => (
-  <footer className="bg-[var(--bq-paper-700)] text-[var(--bq-paper-200)] mt-16 pt-12 pb-6 px-4 md:px-6">
+  <footer className="hidden md:block bg-[var(--bq-paper-700)] text-[var(--bq-paper-200)] mt-16 pt-12 pb-6 px-4 md:px-6">
     <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+      <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
         {/* Brand */}
         <div>
           <div className="flex items-center gap-3 mb-4">

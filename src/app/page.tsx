@@ -1,13 +1,32 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Icon, Icons } from '@/presentation/components/icons';
 import { Button } from '@/presentation/components/ui/Button';
 import { Card } from '@/presentation/components/ui/Card';
 import { LastReadCard } from '@/presentation/components/quran/LastReadCard';
-import { useSurahList, useLastRead } from '@/presentation/hooks/useQuran';
+import { useSurahList, useLastRead, useSurahDetail } from '@/presentation/hooks/useQuran';
+import { useSholat } from '@/presentation/hooks/useSholat';
+import { useFavorites } from '@/presentation/hooks/useFavorites';
 import type { Surah } from '@/domain/entities/surah';
+
+// ─── Helper: Section Header ───
+function SectionHeader({ title, subtitle, href }: { title: string; subtitle?: string; href?: string }) {
+  return (
+    <div className="flex justify-between items-end px-4 md:px-0 mb-4">
+      <div>
+        <h2 className="text-[18px] md:text-xl font-bold text-[var(--bq-paper-800)] m-0 tracking-tight">{title}</h2>
+        {subtitle && <p className="text-[11px] text-[var(--bq-paper-500)] m-0 mt-0.5 uppercase tracking-wider font-medium">{subtitle}</p>}
+      </div>
+      {href && (
+        <Link href={href} className="text-[12px] font-bold text-[var(--bq-brown-600)] no-underline flex items-center gap-1 hover:gap-1.5 transition-all">
+          Semua <Icon d={Icons.ArrowRight} size={14} />
+        </Link>
+      )}
+    </div>
+  );
+}
 
 // ─── Daily Verse (random ayat from popular surahs) ───
 function DailyVerseHero() {
@@ -93,18 +112,237 @@ function PopularSurahs({ surahs }: { surahs: Surah[] }) {
   );
 }
 
+// ─── Mobile Components ───
+function MobileGreeting() {
+  return (
+    <div className="md:hidden flex justify-between items-center mb-6 mt-4 px-4">
+      <div>
+        <div className="text-xs text-[var(--bq-paper-500)]">Assalamu'alaikum,</div>
+        <div className="text-base font-bold text-[var(--bq-paper-800)]">Ahmad</div>
+      </div>
+      <div className="flex gap-2">
+        <Link href="/quran" className="w-9 h-9 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] flex items-center justify-center rounded-lg text-[var(--bq-paper-600)]">
+          <Icon d={Icons.Search} size={16} />
+        </Link>
+        <button className="w-9 h-9 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] flex items-center justify-center rounded-lg text-[var(--bq-paper-600)]">
+          <Icon d={Icons.Bookmark} size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MobileQuickGrid() {
+  const actions = [
+    { icon: Icons.Sparkle, label: "Qur'an", href: '/quran' }, // Changed from Book to Sparkle
+    { icon: Icons.Compass, label: 'Kiblat', href: '/sholat' },
+    { icon: Icons.Clock, label: 'Sholat', href: '/sholat' },
+    { icon: Icons.Heart, label: "Do'a", href: '#' },
+  ];
+
+  return (
+    <div className="md:hidden grid grid-cols-4 gap-2 my-6 px-4">
+      {actions.map((q) => (
+        <Link key={q.label} href={q.href} className="no-underline">
+          <div className="flex flex-col items-center gap-1.5 py-2.5 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] rounded-xl">
+            <Icon d={q.icon} size={18} className="text-[var(--bq-brown-400)]" />
+            <span className="text-[10px] font-semibold text-[var(--bq-paper-600)]">{q.label}</span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+
+function MobilePrayerCard() {
+  const { nextPrayer, lokasi, loading } = useSholat();
+
+  if (loading || !nextPrayer) {
+    return (
+      <div className="md:hidden bg-white border border-[var(--bq-paper-200)] rounded-2xl p-5 mb-6 mx-4 animate-pulse">
+        <div className="h-3 w-20 bg-[var(--bq-paper-200)] rounded mb-2"></div>
+        <div className="h-8 w-32 bg-[var(--bq-paper-200)] rounded"></div>
+      </div>
+    );
+  }
+
+  const getCountdown = () => {
+    const now = new Date();
+    const [h, m] = nextPrayer.time.split(':').map(Number);
+    const target = new Date();
+    target.setHours(h, m, 0);
+    
+    let diff = target.getTime() - now.getTime();
+    if (diff < 0) {
+      target.setDate(target.getDate() + 1);
+      diff = target.getTime() - now.getTime();
+    }
+    
+    const mins = Math.floor(diff / (1000 * 60));
+    const hLeft = Math.floor(mins / 60);
+    const mLeft = mins % 60;
+    
+    if (hLeft > 0) return `${hLeft}j ${mLeft}m lagi`;
+    return `${mLeft}m lagi`;
+  };
+
+  const getPrayerIcon = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('subuh')) return Icons.Sunrise;
+    if (n.includes('dzuhur')) return Icons.Sun;
+    if (n.includes('ashar')) return Icons.Cloud;
+    if (n.includes('maghrib')) return Icons.Sunset;
+    if (n.includes('isya')) return Icons.Moon;
+    return Icons.Clock;
+  };
+
+  return (
+    <div className="md:hidden bg-white border border-[var(--bq-paper-200)] rounded-2xl p-5 mb-6 mx-4 flex justify-between items-center shadow-sm relative overflow-hidden">
+      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[var(--bq-gold-50)] to-transparent opacity-40" />
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-[11px] font-bold tracking-[1.2px] uppercase text-[var(--bq-gold-600)]">{nextPrayer.name}</span>
+          <span className="text-[11px] text-[var(--bq-paper-400)] font-medium">• {lokasi}</span>
+        </div>
+        <div className="flex items-baseline gap-3">
+          <span className="bq-serif text-[32px] font-bold text-[var(--bq-paper-900)] leading-none">{nextPrayer.time}</span>
+          <span className="text-[11px] font-bold text-[var(--bq-gold-700)] bg-[var(--bq-gold-50)] px-2 py-1 rounded-lg">
+            {getCountdown()}
+          </span>
+        </div>
+      </div>
+      <div className="relative z-10 w-12 h-12 flex items-center justify-center bg-[var(--bq-gold-50)] text-[var(--bq-gold-600)] rounded-2xl bq-float">
+        <Icon d={getPrayerIcon(nextPrayer.name)} size={24} stroke={2} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Ayat Preview (Interactive & Inline) ───
+function AyatPreview({ surahNo, ayatNo, surahName, arabicName }: { surahNo: number; ayatNo: number; surahName: string; arabicName: string }) {
+  const { surah, loading } = useSurahDetail(surahNo);
+  const [expanded, setExpanded] = useState(false);
+  const ayat = surah?.ayat.find(a => a.nomorAyat === ayatNo);
+
+  return (
+    <div 
+      onClick={() => setExpanded(!expanded)}
+      className="bg-white border border-[var(--bq-paper-200)] rounded-2xl p-5 h-full flex flex-col justify-between transition-all duration-300 hover:border-[var(--bq-gold-300)] hover:shadow-lg cursor-pointer shrink-0 snap-center w-[300px] md:w-full group relative"
+    >
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg transition-colors ${expanded ? 'bg-[var(--bq-gold-500)] text-white' : 'bg-[var(--bq-gold-50)] text-[var(--bq-gold-600)]'}`}>
+            <Icon d={Icons.Sparkle} size={16} />
+          </div>
+          <div>
+            <div className="text-[13px] font-bold text-[var(--bq-paper-800)]">{surahName}</div>
+            <div className="text-[11px] text-[var(--bq-paper-500)] uppercase tracking-wider">Ayat {ayatNo}</div>
+          </div>
+        </div>
+        <div className="bq-arabic text-xl text-[var(--bq-paper-400)] group-hover:text-[var(--bq-gold-500)] transition-colors">{arabicName}</div>
+      </div>
+      
+      {loading ? (
+        <div className="space-y-2 py-2">
+          <div className="h-4 bg-[var(--bq-paper-100)] rounded animate-pulse w-full" />
+          <div className="h-3 bg-[var(--bq-paper-100)] rounded animate-pulse w-3/4" />
+        </div>
+      ) : ayat ? (
+        <div className="flex flex-col gap-3">
+          <div className={`bq-arabic text-right text-lg text-[var(--bq-paper-800)] leading-loose transition-all duration-500 ${expanded ? '' : 'line-clamp-2 opacity-80'}`}>
+            {ayat.teksArab}
+          </div>
+          {expanded && (
+            <div className="text-[12px] text-[var(--bq-paper-500)] leading-relaxed italic animate-fade-in border-t border-[var(--bq-paper-100)] pt-3">
+              "{ayat.teksIndonesia}"
+            </div>
+          )}
+          {!expanded && (
+            <div className="text-[10px] text-[var(--bq-gold-600)] font-bold text-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              Tap untuk baca terjemahan
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-[11px] text-red-400">Gagal memuat ayat</div>
+      )}
+    </div>
+  );
+}
+
+// ─── Surah Pilihan (Swipable) ───
+function FavoriteSurahs({ surahs }: { surahs: Surah[] }) {
+  const { favorites } = useFavorites();
+  const items = surahs.filter(s => favorites.surahs.includes(s.nomor));
+
+  if (items.length === 0) return (
+    <div className="px-4 md:px-0 py-8 text-center text-[var(--bq-paper-400)] text-sm border-2 border-dashed border-[var(--bq-paper-200)] rounded-2xl mx-4 md:mx-0">
+      Belum ada surah pilihan.
+    </div>
+  );
+
+  return (
+    <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-2 snap-x no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {items.map(s => (
+        <Link key={s.nomor} href={`/quran/${s.nomor}`} className="no-underline shrink-0 snap-center w-[280px] md:w-full group">
+          <div className="bg-white border border-[var(--bq-paper-200)] rounded-2xl p-5 transition-all duration-300 hover:border-[var(--bq-brown-300)] hover:shadow-xl hover:-translate-y-1 relative overflow-hidden active:scale-95 md:active:scale-100">
+            <div className="flex justify-between items-center mb-4 relative z-10">
+              <div className="w-10 h-10 flex items-center justify-center bg-[var(--bq-brown-50)] text-[var(--bq-brown-600)] rounded-xl text-sm font-bold font-mono group-hover:bg-[var(--bq-brown-500)] group-hover:text-white transition-colors">
+                {s.nomor}
+              </div>
+              <div className="bq-arabic text-2xl text-[var(--bq-paper-700)] group-hover:text-[var(--bq-brown-600)] transition-colors">
+                {s.nama}
+              </div>
+            </div>
+            <div className="text-[15px] font-bold text-[var(--bq-paper-800)] mb-1">{s.namaLatin}</div>
+            <div className="text-xs text-[var(--bq-paper-500)] font-medium uppercase tracking-wider">{s.arti} · {s.jumlahAyat} ayat</div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// ─── Ayat Pilihan (Swipable) ───
+function FavoriteAyats({ surahs }: { surahs: Surah[] }) {
+  const { favorites } = useFavorites();
+  
+  if (favorites.ayats.length === 0) return (
+    <div className="px-4 md:px-0 py-8 text-center text-[var(--bq-paper-400)] text-sm border-2 border-dashed border-[var(--bq-paper-200)] rounded-2xl mx-4 md:mx-0">
+      Belum ada ayat pilihan.
+    </div>
+  );
+
+  return (
+    <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-2 snap-x no-scrollbar md:grid md:grid-cols-1 lg:grid-cols-2">
+      {favorites.ayats.map(key => {
+        const [sNo, aNo] = key.split(':').map(Number);
+        const surah = surahs.find(s => s.nomor === sNo);
+        if (!surah) return null;
+
+        return <AyatPreview key={key} surahNo={sNo} ayatNo={aNo} surahName={surah.namaLatin} arabicName={surah.nama} />;
+      })}
+    </div>
+  );
+}
+
 // ─── Main Home Page ───
 export default function HomePage() {
   const { surahs, loading } = useSurahList();
   const { lastRead } = useLastRead();
 
   return (
-    <div className="min-h-screen">
-      <DailyVerseHero />
+    <div className="min-h-screen bg-[var(--bq-paper-100)] md:bg-transparent pb-24 md:pb-0">
+      <div className="hidden md:block">
+        <DailyVerseHero />
+      </div>
 
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-8 md:py-10">
+      <div className="max-w-[1200px] mx-auto md:px-6 md:py-10">
+        <MobileGreeting />
+
         {/* Last Read + Quick Actions */}
-        <div className="flex flex-col lg:grid lg:grid-cols-[340px_1fr] gap-4 md:gap-6 mb-8 md:mb-12">
+        <div className="flex flex-col lg:grid lg:grid-cols-[380px_1fr] gap-6 md:gap-8 mb-10 px-4 md:px-0">
           <div className="w-full">
             {lastRead ? (
               <Link href={`/quran/${lastRead.surah}`} className="no-underline block h-full">
@@ -118,57 +356,62 @@ export default function HomePage() {
               <LastReadCard surah="Mulai Membaca" ayat="Belum ada" progress={0} />
             )}
           </div>
-          <div className="w-full">
+          <div className="hidden md:block w-full">
             <QuickActions />
           </div>
         </div>
 
-        {/* Surah Populer */}
-        <div className="mb-8 md:mb-12">
-          <div className="flex justify-between items-center mb-4 md:mb-5">
-            <div>
-              <div className="text-[10px] md:text-[11px] tracking-[1.2px] uppercase text-[var(--bq-gold-400)] font-semibold">
-                Pilihan
-              </div>
-              <h2 className="bq-serif text-2xl md:text-[28px] font-medium m-0 mt-1 tracking-[-0.3px] text-[var(--bq-paper-800)]">
-                Surah Populer
-              </h2>
-            </div>
-            <Link href="/quran" className="no-underline">
-              <Button variant="ghost" size="sm" iconRight={Icons.ChevronRight}>
-                Lihat Semua
-              </Button>
-            </Link>
-          </div>
+        <div className="mb-2">
+          <MobileQuickGrid />
+          <MobilePrayerCard />
+        </div>
+
+        {/* Section 1: Surah Pilihan */}
+        <div className="mb-4">
+          <SectionHeader title="Surah Pilihan" subtitle="Favorit Anda" href="/quran" />
           {loading ? (
-            <div className="text-center p-10 text-[var(--bq-paper-400)] text-sm">
-              Memuat data surah...
+            <div className="px-4 py-4 flex gap-4 overflow-hidden">
+               {[1,2,3].map(i => <div key={i} className="w-[280px] h-[160px] bg-[var(--bq-paper-200)] rounded-2xl animate-pulse shrink-0" />)}
             </div>
           ) : (
-            <PopularSurahs surahs={surahs} />
+            <FavoriteSurahs surahs={surahs} />
+          )}
+        </div>
+
+        {/* Section 2: Ayat Pilihan */}
+        <div className="mb-8">
+          <SectionHeader title="Ayat Pilihan" subtitle="Inspirasi Harian" />
+          {loading ? (
+             <div className="px-4 py-4 flex gap-4 overflow-hidden">
+               {[1,2].map(i => <div key={i} className="w-[300px] h-[120px] bg-[var(--bq-paper-200)] rounded-2xl animate-pulse shrink-0" />)}
+             </div>
+          ) : (
+            <FavoriteAyats surahs={surahs} />
           )}
         </div>
 
         {/* CTA Section */}
-        <section className="bg-[var(--bq-paper-100)] border border-[var(--bq-paper-200)] rounded-xl md:rounded-[24px] p-8 md:p-12 text-center">
-          <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-[var(--bq-brown-500)] text-[var(--bq-gold-200)] inline-flex items-center justify-center mb-4 md:mb-5">
-            <span className="bq-arabic text-2xl md:text-[32px] leading-none">ب</span>
-          </div>
-          <h2 className="bq-serif text-2xl md:text-[32px] font-medium m-0 mb-2 md:mb-2 text-[var(--bq-paper-800)] tracking-[-0.3px]">
-            Dari Baitul Qowwam untuk Ummat
-          </h2>
-          <p className="text-sm md:text-[15px] text-[var(--bq-paper-500)] max-w-[480px] mx-auto mb-5 md:mb-6 leading-relaxed">
-            Yayasan Baitul Qowwam bergerak di bidang pendidikan, sosial, dan dakwah. Mari bersama menebar manfaat.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/yayasan" className="no-underline">
-              <Button variant="primary" size="lg" className="w-full sm:w-auto">Tentang Yayasan</Button>
-            </Link>
-            <Link href="/donasi" className="no-underline">
-              <Button variant="outline" size="lg" icon={Icons.Heart} className="w-full sm:w-auto">Donasi</Button>
-            </Link>
-          </div>
-        </section>
+        <div className="hidden md:block">
+          <section className="bg-[var(--bq-paper-100)] border border-[var(--bq-paper-200)] rounded-[32px] p-10 md:p-16 text-center shadow-sm">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-[var(--bq-brown-500)] text-[var(--bq-gold-200)] inline-flex items-center justify-center mb-6 shadow-lg shadow-brown-900/20">
+              <span className="bq-arabic text-[40px] leading-none">ب</span>
+            </div>
+            <h2 className="bq-serif text-3xl md:text-[42px] font-medium m-0 mb-4 text-[var(--bq-paper-800)] tracking-[-0.8px]">
+              Baitul Qowwam untuk Ummat
+            </h2>
+            <p className="text-[15px] md:text-lg text-[var(--bq-paper-500)] max-w-[540px] mx-auto mb-8 leading-relaxed opacity-80">
+              Mari bersama menebar manfaat melalui pendidikan, sosial, dan dakwah.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/yayasan" className="no-underline">
+                <Button variant="primary" size="lg" className="w-full sm:w-auto px-10 h-14 rounded-full">Tentang Kami</Button>
+              </Link>
+              <Link href="/donasi" className="no-underline">
+                <Button variant="outline" size="lg" icon={Icons.Heart} className="w-full sm:w-auto px-10 h-14 rounded-full">Donasi Sekarang</Button>
+              </Link>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

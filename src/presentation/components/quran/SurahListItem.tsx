@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon, Icons } from '../icons';
+import { SurahNumberFrame } from './SurahNumberFrame';
 
 interface SurahListItemProps {
   num: number;
@@ -10,56 +11,50 @@ interface SurahListItemProps {
   revelation: string;
   bookmarked?: boolean;
   onClick?: () => void;
+  onToggleBookmark?: (e: React.MouseEvent) => void;
 }
 
 export const SurahListItem: React.FC<SurahListItemProps> = ({
-  num, name, transliteration, meaning, ayatCount, revelation, bookmarked, onClick,
+  num, name, transliteration, meaning, ayatCount, revelation, bookmarked, onClick, onToggleBookmark
 }) => (
   <div
     onClick={onClick}
-    style={{
-      display: 'grid',
-      gridTemplateColumns: '44px 1fr auto',
-      gap: 14,
-      alignItems: 'center',
-      padding: '14px 16px',
-      background: 'var(--bq-paper-50)',
-      border: '1px solid var(--bq-paper-200)',
-      borderRadius: 'var(--bq-radius-md)',
-      cursor: 'pointer',
-      transition: 'all var(--bq-dur-fast)',
-    }}
+    className="grid grid-cols-[44px_1fr_auto] gap-4 items-center p-5 md:px-6 bg-white border border-[var(--bq-paper-200)] rounded-2xl cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:border-[var(--bq-gold-300)]"
   >
-    <div
-      style={{
-        width: 44,
-        height: 44,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'><polygon points='22,2 40,13 40,31 22,42 4,31 4,13' fill='none' stroke='%23C9A24E' stroke-width='1.4'/></svg>")`,
-        fontSize: 13,
-        fontWeight: 600,
-        color: 'var(--bq-brown-500)',
-        fontFamily: 'var(--bq-font-mono)',
-      }}
-    >
-      {num}
-    </div>
-    <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 2 }}>
-        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--bq-paper-800)' }}>
+    <SurahNumberFrame num={num} />
+    
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-baseline gap-1.5 flex-wrap">
+        <span className="text-base font-semibold text-[var(--bq-paper-800)]">
           {transliteration}
         </span>
-        <span style={{ fontSize: 12, color: 'var(--bq-paper-500)' }}>· {meaning}</span>
+        <span className="text-xs text-[var(--bq-paper-500)]">· {meaning}</span>
       </div>
-      <div style={{ fontSize: 12, color: 'var(--bq-paper-500)' }}>
+      <div className="text-[13px] text-[var(--bq-paper-500)]">
         {revelation} · {ayatCount} ayat
       </div>
     </div>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-      {bookmarked && <Icon d={Icons.Bookmark} size={16} style={{ color: 'var(--bq-gold-400)' }} />}
-      <span className="bq-arabic" style={{ fontSize: 26, color: 'var(--bq-paper-800)', lineHeight: 1 }}>
+    
+    <div className="flex items-center gap-3.5">
+      {onToggleBookmark ? (
+        <button 
+          onClick={onToggleBookmark}
+          className="p-2 -mr-2 rounded-full hover:bg-[var(--bq-paper-50)] transition-colors"
+          aria-label={bookmarked ? "Hapus dari bookmark" : "Tambahkan ke bookmark"}
+        >
+          <Icon 
+            d={Icons.Bookmark} 
+            size={18} 
+            style={{ 
+              color: bookmarked ? 'var(--bq-gold-400)' : 'var(--bq-paper-300)',
+              fill: bookmarked ? 'var(--bq-gold-400)' : 'none'
+            }} 
+          />
+        </button>
+      ) : (
+        bookmarked && <Icon d={Icons.Bookmark} size={16} style={{ color: 'var(--bq-gold-400)', fill: 'var(--bq-gold-400)' }} />
+      )}
+      <span className="bq-arabic text-[28px] text-[var(--bq-paper-800)] leading-none mt-1">
         {name}
       </span>
     </div>

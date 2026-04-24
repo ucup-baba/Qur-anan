@@ -24,3 +24,120 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ──────────────────────────────────────────────
+   MICRO-ANIMATIONS & HOVER EFFECTS
+   ────────────────────────────────────────────── */
+
+/* Surah list item hover */
+a:hover > div[style*="border"] {
+  box-shadow: 0 4px 16px rgba(108, 82, 54, 0.08) !important;
+  border-color: var(--bq-brown-200) !important;
+  transform: translateY(-1px);
+  transition: all 0.18s ease;
+}
+
+/* AyatCard hover */
+.ayat-card-hover:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07) !important;
+  border-color: var(--bq-paper-300) !important;
+}
+
+/* Fade-in slide up for grid items */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply staggered animation to grid children */
+.grid > a,
+.grid > div {
+  animation: fadeSlideUp 0.35s ease both;
+}
+
+.grid > a:nth-child(1),  .grid > div:nth-child(1)  { animation-delay: 0.02s; }
+.grid > a:nth-child(2),  .grid > div:nth-child(2)  { animation-delay: 0.05s; }
+.grid > a:nth-child(3),  .grid > div:nth-child(3)  { animation-delay: 0.08s; }
+.grid > a:nth-child(4),  .grid > div:nth-child(4)  { animation-delay: 0.11s; }
+.grid > a:nth-child(5),  .grid > div:nth-child(5)  { animation-delay: 0.14s; }
+.grid > a:nth-child(6),  .grid > div:nth-child(6)  { animation-delay: 0.17s; }
+.grid > a:nth-child(7),  .grid > div:nth-child(7)  { animation-delay: 0.20s; }
+.grid > a:nth-child(8),  .grid > div:nth-child(8)  { animation-delay: 0.23s; }
+.grid > a:nth-child(n+9), .grid > div:nth-child(n+9) { animation-delay: 0.26s; }
+
+/* Prayer time card hover */
+[style*="borderRadius: 14"] {
+  transition: all 0.2s ease !important;
+}
+[style*="borderRadius: 14"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07) !important;
+}
+
+/* Smooth button transitions */
+button {
+  transition: all 0.15s ease;
+}
+button:active {
+  transform: scale(0.97);
+}
+
+/* Spinner for loading states */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 0.9s linear infinite;
+}
+
+/* Scrollbar hide utility */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+/* ──────────────────────────────────────────────
+   BQ CUSTOM ANIMATIONS
+   ────────────────────────────────────────────── */
+
+@keyframes bq-float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes bq-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bq-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.bq-float {
+  animation: bq-float 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: bq-fade-in 0.6s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: bq-slide-up 0.5s ease-out forwards;
+}
+
+/* Custom Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

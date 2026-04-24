@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback, useState, use } from 'react';
+import React, { useEffect, useCallback, useState, use, useMemo } from 'react';
 import Link from 'next/link';
 import { Icon, Icons } from '@/presentation/components/icons';
 import { Button } from '@/presentation/components/ui/Button';
@@ -8,7 +8,7 @@ import { Badge } from '@/presentation/components/ui/Badge';
 import { AyatCard } from '@/presentation/components/quran/AyatCard';
 import { AudioPlayer } from '@/presentation/components/quran/AudioPlayer';
 import { useSurahDetail, useLastRead, useAudioPlayer } from '@/presentation/hooks/useQuran';
-import { storageService } from '@/infrastructure/storage/localStorageService';
+import { useFavorites } from '@/presentation/hooks/useFavorites';
 
 interface PageParams {
   params: Promise<{ nomor: string }>;
@@ -20,6 +20,7 @@ export default function SurahReadingPage({ params }: PageParams) {
   const { surah, loading, error } = useSurahDetail(nomor);
   const { updateLastRead } = useLastRead();
   const audio = useAudioPlayer();
+  const { toggleSurah, toggleAyat, isSurahFavorite, isAyatFavorite } = useFavorites();
   const [currentAyat, setCurrentAyat] = useState<number | null>(null);
   const [showTransliteration, setShowTransliteration] = useState(true);
 
@@ -43,11 +44,8 @@ export default function SurahReadingPage({ params }: PageParams) {
 
   const handleBookmark = useCallback((ayatNum: number) => {
     if (!surah) return;
-    storageService.toggleBookmark(`${surah.nomor}:${ayatNum}`, {
-      surahName: surah.namaLatin,
-      ayat: ayatNum,
-    });
-  }, [surah]);
+    toggleAyat(surah.nomor, ayatNum);
+  }, [surah, toggleAyat]);
 
   const handleCopy = useCallback((arabic: string, translation: string, ayatNum: number) => {
     const text = `${arabic}\n\n${translation}\n\n— ${surah?.namaLatin} : ${ayatNum}`;
@@ -79,20 +77,35 @@ export default function SurahReadingPage({ params }: PageParams) {
   }
 
   return (
-    <div className="max-w-[900px] mx-auto pt-8 pb-24 md:pb-[100px] px-4 md:px-6">
+    <div className="max-w-[800px] mx-auto pt-8 pb-24 md:pb-[100px] px-4 md:px-6">
       {/* Surah Header */}
-      <div className="text-center mb-8 md:mb-10">
-        <div className="flex justify-center gap-2 mb-4">
-          <Badge tone="brown">{surah.tempatTurun}</Badge>
+      <div className="text-center mb-8 md:mb-10 py-8 px-6 rounded-2xl relative overflow-hidden group" style={{ background: 'linear-gradient(135deg, var(--bq-paper-100) 0%, #fff 100%)', border: '1px solid var(--bq-paper-200)' }}>
+        <button 
+          onClick={() => toggleSurah(surah.nomor)}
+          className="absolute top-4 right-4 p-3 rounded-full hover:bg-white/50 transition-all z-20 group"
+          title={isSurahFavorite(surah.nomor) ? "Hapus dari Pilihan" : "Tambahkan ke Pilihan"}
+        >
+          <Icon 
+            d={Icons.Bookmark} 
+            size={24} 
+            style={{ 
+              color: isSurahFavorite(surah.nomor) ? 'var(--bq-gold-500)' : 'var(--bq-paper-300)',
+              fill: isSurahFavorite(surah.nomor) ? 'var(--bq-gold-500)' : 'none'
+            }} 
+          />
+        </button>
+
+        <div className="flex justify-center gap-2 mb-5">
+          <Badge tone="brown">{surah.tempatTurun === 'Mekah' ? 'Makkiyyah' : surah.tempatTurun === 'Madinah' ? 'Madaniyyah' : surah.tempatTurun}</Badge>
           <Badge tone="neutral">{surah.jumlahAyat} ayat</Badge>
         </div>
-        <div className="bq-arabic text-4xl md:text-5xl text-[var(--bq-paper-800)] mb-2 md:mb-3">
+        <div className="bq-arabic text-5xl md:text-6xl text-[var(--bq-paper-800)] mb-3 md:mb-4" style={{ lineHeight: 1.4 }}>
           {surah.nama}
         </div>
-        <h1 className="bq-serif text-2xl md:text-[32px] font-medium m-0 mb-1 text-[var(--bq-paper-800)] tracking-[-0.3px]">
+        <h1 className="bq-serif text-3xl md:text-[38px] font-medium m-0 mb-2 text-[var(--bq-paper-800)] tracking-[-0.5px]">
           {surah.namaLatin}
         </h1>
-        <p className="text-[13px] md:text-sm text-[var(--bq-paper-500)] m-0">
+        <p className="text-[14px] md:text-[15px] text-[var(--bq-paper-500)] m-0">
           {surah.arti}
         </p>
       </div>
@@ -152,6 +165,7 @@ export default function SurahReadingPage({ params }: PageParams) {
             arabic={a.teksArab}
             translation={a.teksIndonesia}
             transliteration={showTransliteration ? a.teksLatin : undefined}
+            bookmarked={isAyatFavorite(surah.nomor, a.nomorAyat)}
             onPlay={() => handlePlayAyat(a.nomorAyat, a.audio['05'])}
             onBookmark={() => handleBookmark(a.nomorAyat)}
             onCopy={() => handleCopy(a.teksArab, a.teksIndonesia, a.nomorAyat)}

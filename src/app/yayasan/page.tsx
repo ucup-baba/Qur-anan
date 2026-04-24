@@ -1,6 +1,10 @@
 import React from 'react';
-import { Card } from '@/presentation/components/ui/Card';
-import { Icon, Icons } from '@/presentation/components/icons';
+import Link from 'next/link';
+import { Button } from '@/presentation/components/ui/Button';
+import { SectionHeader } from '@/presentation/components/ui/SectionHeader';
+import { Icon, Icons, Placeholder } from '@/presentation/components/icons';
+import { ProgramCard } from '@/presentation/components/yayasan/ProgramCard';
+import { TestimonialCard } from '@/presentation/components/yayasan/TestimonialCard';
 
 export const metadata = {
   title: 'Tentang Yayasan - Qur-anan',
@@ -9,57 +13,52 @@ export const metadata = {
 
 export default function YayasanPage() {
   return (
-    <div className="min-h-[80vh] py-12 md:py-20 px-4 md:px-6 max-w-[800px] mx-auto">
-      <div className="text-center mb-12">
-        <div className="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-2xl bg-[var(--bq-brown-500)] text-[var(--bq-gold-200)] flex items-center justify-center mb-6">
-          <span className="bq-arabic text-3xl md:text-4xl leading-none">ب</span>
+    <div>
+      <div className="pt-12 pb-10 px-4 sm:px-6 bg-[var(--bq-paper-100)] border-b border-[var(--bq-paper-200)]">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="text-[11px] tracking-[1.4px] uppercase text-[var(--bq-gold-400)] font-semibold mb-2.5">
+            Yayasan Baitul Qowwam
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-8 md:gap-10 items-center bq-hero-grid">
+            <div>
+              <h1 className="bq-serif text-4xl md:text-[52px] font-medium m-0 mb-3.5 text-[var(--bq-paper-800)] tracking-[-0.8px] leading-[1.1] md:leading-[1.05]">
+                Merawat yatim, mendidik hafidz, menerangi ummat.
+              </h1>
+              <p className="text-base text-[var(--bq-paper-600)] m-0 mb-6 leading-relaxed max-w-[520px]">
+                Panti asuhan, pondok pesantren, dan kajian terbuka — sejak 2011 kami hadir untuk masyarakat luas dengan niat tulus menegakkan nilai-nilai Qur'ani.
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                <Link href="/donasi" className="no-underline">
+                  <Button variant="primary" size="lg" icon={Icons.Heart2}>Donasi</Button>
+                </Link>
+                <Button variant="secondary" size="lg" iconRight={Icons.ArrowRight}>Kegiatan</Button>
+              </div>
+            </div>
+            <Placeholder label="foto santri / kajian" aspect="4/3" className="rounded-2xl" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mt-10 pt-8 border-t border-[var(--bq-paper-200)]">
+            {[['14', 'Tahun berdiri'], ['182', 'Santri & yatim'], ['46', 'Hafidz Qur\'an'], ['Rp 2,4M', 'Tersalurkan 2025']].map(([n, l]) => (
+              <div key={l}>
+                <div className="bq-serif text-3xl md:text-4xl font-medium text-[var(--bq-paper-800)] tracking-[-0.5px]">{n}</div>
+                <div className="text-xs text-[var(--bq-paper-500)] tracking-[0.4px] mt-1">{l}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <h1 className="bq-serif text-3xl md:text-5xl text-[var(--bq-paper-800)] mb-4 font-medium tracking-[-0.5px]">Yayasan Baitul Qowwam</h1>
-        <p className="text-[var(--bq-paper-500)] text-sm md:text-base max-w-lg mx-auto">
-          Membangun generasi Islami melalui pendidikan, sosial, dan dakwah.
-        </p>
       </div>
-
-      <div className="space-y-6 md:space-y-8 text-[var(--bq-paper-700)] text-sm md:text-[15px] leading-relaxed">
-        <Card className="p-6 md:p-8">
-          <h2 className="bq-serif text-xl md:text-2xl mb-4 text-[var(--bq-paper-800)]">Visi Kami</h2>
-          <p>
-            Menjadi lembaga sosial dan keagamaan yang terdepan dalam memberdayakan umat melalui pendidikan al-Qur'an, pengembangan karakter islami, dan kepedulian sosial yang berkelanjutan.
-          </p>
-        </Card>
-
-        <Card className="p-6 md:p-8">
-          <h2 className="bq-serif text-xl md:text-2xl mb-4 text-[var(--bq-paper-800)]">Program Utama</h2>
-          <ul className="space-y-4">
-            <li className="flex items-start gap-3">
-              <div className="mt-1 w-6 h-6 rounded-full bg-[var(--bq-brown-50)] text-[var(--bq-brown-500)] flex items-center justify-center flex-shrink-0">
-                <Icon d={Icons.Book} size={14} />
-              </div>
-              <div>
-                <strong className="block text-[var(--bq-paper-800)]">Taman Pendidikan Al-Qur'an (TPA)</strong>
-                <span className="text-[var(--bq-paper-500)]">Membina anak-anak untuk membaca dan menghafal Al-Qur'an.</span>
-              </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <div className="mt-1 w-6 h-6 rounded-full bg-[var(--bq-gold-50)] text-[var(--bq-gold-500)] flex items-center justify-center flex-shrink-0">
-                <Icon d={Icons.Heart} size={14} />
-              </div>
-              <div>
-                <strong className="block text-[var(--bq-paper-800)]">Santunan Yatim & Dhuafa</strong>
-                <span className="text-[var(--bq-paper-500)]">Program berbagi kebahagiaan untuk mereka yang membutuhkan.</span>
-              </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <div className="mt-1 w-6 h-6 rounded-full bg-[var(--bq-brown-100)] text-[var(--bq-brown-600)] flex items-center justify-center flex-shrink-0">
-                <Icon d={Icons.User} size={14} />
-              </div>
-              <div>
-                <strong className="block text-[var(--bq-paper-800)]">Kajian Rutin Muslimah</strong>
-                <span className="text-[var(--bq-paper-500)]">Pembinaan keislaman untuk mempererat silaturahim dan ilmu agama.</span>
-              </div>
-            </li>
-          </ul>
-        </Card>
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-12">
+        <SectionHeader eyebrow="Kegiatan" title="Program rutin" subtitle="Terbuka untuk umum." />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mb-12">
+          <ProgramCard kind="Kajian" title="Kajian Sabtu Pagi" description="Kajian tafsir rutin bersama Ust. Ahmad Faisal setiap pekan." date="Setiap Sabtu · 06:00 WIB" location="Masjid Baitul Qowwam, Cilegon" />
+          <ProgramCard kind="Pesantren" title="Tahfidz Qur'an" description="Program menghafal Al-Qur'an 30 juz untuk santri usia 12–18 tahun." date="Pendaftaran dibuka Juni 2026" location="Pondok Baitul Qowwam" />
+          <ProgramCard kind="Sosial" title="Santunan Yatim" description="Santunan rutin 48 anak yatim & dhuafa di lingkungan sekitar." date="Setiap bulan" location="Panti Baitul Qowwam" />
+        </div>
+        <SectionHeader eyebrow="Testimoni" title="Kata mereka" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <TestimonialCard quote="Alhamdulillah, anak saya tumbuh menjadi hafidz yang berakhlak di pesantren Baitul Qowwam." name="Siti Hadijah" role="Orang tua santri" />
+          <TestimonialCard quote="Kajian Sabtu paginya hangat dan substansial. Saya jadi betah mengajak keluarga." name="Rudi Pratama" role="Jamaah kajian" />
+          <TestimonialCard quote="Laporan donasinya transparan dan rutin. Saya tenang menitipkan infaq di sini." name="Dewi Anggraini" role="Donatur" />
+        </div>
       </div>
     </div>
   );
