@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { bumpLocalUpdatedAt } from '@/infrastructure/firebase/sync';
 
 const FAVORITES_KEY = 'bq_favorites_v2';
 
@@ -17,20 +18,27 @@ export function useFavorites() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(FAVORITES_KEY);
-    if (stored) {
-      try {
-        setFavorites(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to parse favorites', e);
+    const load = () => {
+      const stored = localStorage.getItem(FAVORITES_KEY);
+      if (stored) {
+        try {
+          setFavorites(JSON.parse(stored));
+        } catch (e) {
+          console.error('Failed to parse favorites', e);
+        }
       }
-    }
-    setIsLoaded(true);
+      setIsLoaded(true);
+    };
+    load();
+    const onSync = () => load();
+    window.addEventListener('bq-sync-applied', onSync);
+    return () => window.removeEventListener('bq-sync-applied', onSync);
   }, []);
 
   const save = (data: FavoritesData) => {
     setFavorites(data);
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(data));
+    bumpLocalUpdatedAt();
   };
 
   const toggleSurah = (surahNumber: number) => {

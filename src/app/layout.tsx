@@ -4,6 +4,9 @@ import "./globals.css";
 import { TopNav } from "@/presentation/components/layout/TopNav";
 import { Footer } from "@/presentation/components/layout/Footer";
 import { BottomNav } from "@/presentation/components/layout/BottomNav";
+import { GlobalAudioPlayer } from "@/presentation/components/quran/GlobalAudioPlayer";
+import { PWAInstallPrompt } from "@/presentation/components/layout/PWAInstallPrompt";
+import { AppProviders } from "@/presentation/components/providers/AppProviders";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -82,18 +85,24 @@ export default function RootLayout({
         `}} />
       </head>
       <body className={`${plusJakartaSans.className} min-h-full flex flex-col bq-root`}>
-        <TopNav />
-        <main style={{ flex: 1 }} className="pb-[100px] md:pb-0">
-          {children}
-        </main>
-        <Footer />
-        <BottomNav />
+        <AppProviders>
+          <TopNav />
+          <main style={{ flex: 1 }} className="pb-[100px] md:pb-0">
+            {children}
+          </main>
+          <Footer />
+          <GlobalAudioPlayer />
+          <PWAInstallPrompt />
+          <BottomNav />
+        </AppProviders>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
+                  navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    reg.update();
+                  });
                 });
               }
             `,

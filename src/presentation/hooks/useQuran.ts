@@ -5,6 +5,7 @@ import type { Surah, SurahDetail } from '@/domain/entities/surah';
 import type { LastRead } from '@/domain/entities/bookmark';
 import { quranApi } from '@/infrastructure/api/quranApi';
 import { storageService } from '@/infrastructure/storage/localStorageService';
+import { bumpLocalUpdatedAt } from '@/infrastructure/firebase/sync';
 
 // ─── Hook: Surah List ───
 export function useSurahList() {
@@ -45,12 +46,17 @@ export function useLastRead() {
   const [lastRead, setLastRead] = useState<LastRead | null>(null);
 
   useEffect(() => {
-    setLastRead(storageService.getLastRead());
+    const load = () => setLastRead(storageService.getLastRead());
+    load();
+    const onSync = () => load();
+    window.addEventListener('bq-sync-applied', onSync);
+    return () => window.removeEventListener('bq-sync-applied', onSync);
   }, []);
 
   const updateLastRead = useCallback((data: LastRead) => {
     storageService.setLastRead(data);
     setLastRead(data);
+    bumpLocalUpdatedAt();
   }, []);
 
   return { lastRead, updateLastRead };

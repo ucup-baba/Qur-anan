@@ -1,5 +1,6 @@
 import React from 'react';
 import { DonationCard } from '@/presentation/components/yayasan/DonationCard';
+import { RekeningSection } from '@/presentation/components/yayasan/RekeningSection';
 
 export const metadata = {
   title: 'Donasi - Qur-anan',
@@ -28,31 +29,7 @@ export default function DonasiPage() {
         <DonationCard title="Infaq Bulanan" description="Donasi rutin untuk operasional panti asuhan & pesantren." raised={8500000} target={25000000} donors={142} />
       </div>
 
-      {/* Transfer info */}
-      <div className="bg-[var(--bq-paper-100)] border border-[var(--bq-paper-200)] rounded-2xl p-5 md:p-7">
-        <div className="text-[11px] tracking-[1.4px] uppercase text-[var(--bq-gold-400)] font-semibold mb-2">
-          Transfer Manual
-        </div>
-        <h3 className="bq-serif text-2xl font-medium m-0 mb-4 text-[var(--bq-paper-800)]">
-          Rekening Yayasan
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-          {[
-            { bank: 'Bank Syariah Indonesia', no: '7123 4567 89', name: 'Yayasan Baitul Qowwam' },
-            { bank: 'Bank Muamalat', no: '301 0012 345', name: 'Yayasan Baitul Qowwam' },
-            { bank: 'BCA', no: '234 567 8901', name: 'Yayasan Baitul Qowwam' },
-          ].map(b => (
-            <div key={b.bank} className="p-4 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] rounded-xl">
-              <div className="text-[11px] text-[var(--bq-paper-500)] mb-1 font-semibold">{b.bank}</div>
-              <div className="text-lg font-mono font-semibold text-[var(--bq-paper-800)] mb-0.5">{b.no}</div>
-              <div className="text-xs text-[var(--bq-paper-500)]">a.n. {b.name}</div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 text-xs text-[var(--bq-paper-500)] leading-relaxed">
-          Setelah transfer, mohon konfirmasi via WhatsApp <strong>0812-3456-7890</strong> dengan menyertakan bukti transfer agar kami catat sebagai donatur.
-        </div>
-      </div>
+      <RekeningSection />
     </div>
   );
 }

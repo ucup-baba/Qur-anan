@@ -49,6 +49,8 @@ import {
   Sunrise,
   Sunset,
   Cloud,
+  MoreVertical,
+  MoreHorizontal,
 } from 'lucide-react';
 
 // ─── Icon type (accepts any Lucide icon) ───
@@ -124,6 +126,8 @@ export const Icons = {
   Sunrise,
   Sunset,
   Cloud,
+  MoreVertical,
+  MoreHorizontal,
 } as const;
 
 // ─── Placeholder ───

@@ -51,10 +51,37 @@ export const Footer: React.FC = () => (
         {/* Contact */}
         <div>
           <div className="text-[11px] font-semibold tracking-widest uppercase text-[var(--bq-paper-400)] mb-3">Kontak</div>
-          <div className="text-[13px] text-[var(--bq-paper-200)] leading-relaxed">
-            Jl. Baitul Qowwam No. 1<br />
-            Cilegon, Banten<br />
-            info@baitulqowwam.or.id
+          <div className="text-[13px] text-[var(--bq-paper-200)] leading-relaxed flex flex-col gap-2">
+            <a
+              href="https://maps.google.com/maps?gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIPCAEQLhgTGK8BGMcBGIAEMgoIAhAAGBMYFhgeMgcIAxAAGO8FMgcIBBAAGO8FMgYIBRBFGD0yBggGEEUYPTIGCAcQRRg90gEINDYzOWowajeoAgCwAgA&um=1&ie=UTF-8&fb=1&gl=id&sa=X&geocode=KediOoKC9XouMZGlyBmhB6uO&daddr=Area+Sawah,+Mororejo,+Kec.+Tempel,+Kabupaten+Sleman,+Daerah+Istimewa+Yogyakarta+55552"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors group"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <span className="group-hover:underline">
+                Plumbon Kidul, Mororejo,<br />
+                Tempel, Sleman,<br />
+                Yogyakarta 55552
+              </span>
+              <span className="ml-1 text-[var(--bq-paper-400)] text-[11px]">↗ Rute</span>
+            </a>
+            <a
+              href="https://wa.me/6285643386134"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors hover:underline"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              +62 856-4338-6134
+            </a>
+            <a
+              href="mailto:info@baitulqowwam.or.id"
+              className="hover:text-white transition-colors hover:underline"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              info@baitulqowwam.or.id
+            </a>
           </div>
         </div>
       </div>

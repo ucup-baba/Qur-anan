@@ -1,7 +1,10 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getMessaging, getToken, onMessage, type Messaging } from "firebase/messaging";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyDb25hksl_CYu-34bFK6xduDnVuS9kXOMA",
   authDomain: "quranan-qu.firebaseapp.com",
   projectId: "quranan-qu",
@@ -11,10 +14,13 @@ const firebaseConfig = {
   measurementId: "G-KE29BYXHXH"
 };
 
-// Initialize Firebase
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// Initialize Analytics conditionally (client-side only)
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
+
 export const initAnalytics = async () => {
   if (typeof window !== "undefined") {
     const supported = await isSupported();
@@ -25,4 +31,27 @@ export const initAnalytics = async () => {
   return null;
 };
 
-export { app };
+let _messaging: Messaging | null = null;
+export const getFirebaseMessaging = (): Messaging | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    if (!_messaging) _messaging = getMessaging(app);
+    return _messaging;
+  } catch {
+    return null;
+  }
+};
+
+export const requestFCMToken = async (vapidKey: string): Promise<string | null> => {
+  const messaging = getFirebaseMessaging();
+  if (!messaging) return null;
+  try {
+    const swReg = await navigator.serviceWorker.ready;
+    const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: swReg });
+    return token || null;
+  } catch {
+    return null;
+  }
+};
+
+export { app, onMessage };

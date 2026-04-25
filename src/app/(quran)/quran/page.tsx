@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Icon, Icons } from '@/presentation/components/icons';
 import { Input } from '@/presentation/components/ui/Input';
@@ -11,11 +11,15 @@ import { useFavorites } from '@/presentation/hooks/useFavorites';
 
 type FilterType = 'all' | 'Mekah' | 'Madinah' | 'favorite';
 
+const PAGE_SIZE = 30;
+
 export default function QuranListPage() {
   const { surahs, loading, error } = useSurahList();
   const { favorites, toggleSurah, isSurahFavorite } = useFavorites();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const filtered = useMemo(() => {
     let list = surahs;
@@ -36,6 +40,32 @@ export default function QuranListPage() {
     }
     return list;
   }, [surahs, search, filter, favorites, isSurahFavorite]);
+
+  // Reset visible count when filter/search changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, filter]);
+
+  // When searching/filter narrows list, show all results immediately
+  const isFilteringActive = search.trim() !== '' || filter !== 'all';
+  const visible = isFilteringActive ? filtered : filtered.slice(0, visibleCount);
+  const hasMore = !isFilteringActive && visibleCount < filtered.length;
+
+  // Auto load more on scroll
+  useEffect(() => {
+    if (!hasMore || !loadMoreRef.current) return;
+    const el = loadMoreRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((v) => Math.min(v + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, filtered.length]);
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 md:px-6 pt-10 pb-20">
@@ -93,36 +123,56 @@ export default function QuranListPage() {
           <div className="text-[13px] md:text-sm">Gagal memuat data: {error}</div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          {filtered.map((s, index) => (
-            <Link 
-              key={s.nomor} 
-              href={`/quran/${s.nomor}`} 
-              className="no-underline block animate-slide-up"
-              style={{ animationDelay: `${index * 0.05}s` }}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            {visible.map((s, index) => (
+              <Link
+                key={s.nomor}
+                href={`/quran/${s.nomor}`}
+                className="no-underline block animate-slide-up"
+                style={{ animationDelay: `${Math.min(index, 8) * 0.05}s` }}
+              >
+                <SurahListItem
+                  num={s.nomor}
+                  name={s.nama}
+                  transliteration={s.namaLatin}
+                  meaning={s.arti}
+                  ayatCount={s.jumlahAyat}
+                  revelation={s.tempatTurun === 'Mekah' ? 'Makkiyyah' : s.tempatTurun === 'Madinah' ? 'Madaniyyah' : s.tempatTurun}
+                  bookmarked={isSurahFavorite(s.nomor)}
+                  onToggleBookmark={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSurah(s.nomor);
+                  }}
+                />
+              </Link>
+            ))}
+            {filtered.length === 0 && (
+              <div className="col-span-full text-center p-10 text-[var(--bq-paper-400)] text-[13px] md:text-sm">
+                Tidak ada surah yang cocok dengan pencarian &ldquo;{search}&rdquo;
+              </div>
+            )}
+          </div>
+
+          {hasMore && (
+            <div
+              ref={loadMoreRef}
+              className="flex flex-col items-center gap-3 py-10"
             >
-              <SurahListItem
-                num={s.nomor}
-                name={s.nama}
-                transliteration={s.namaLatin}
-                meaning={s.arti}
-                ayatCount={s.jumlahAyat}
-                revelation={s.tempatTurun === 'Mekah' ? 'Makkiyyah' : s.tempatTurun === 'Madinah' ? 'Madaniyyah' : s.tempatTurun}
-                bookmarked={isSurahFavorite(s.nomor)}
-                onToggleBookmark={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggleSurah(s.nomor);
-                }}
-              />
-            </Link>
-          ))}
-          {filtered.length === 0 && (
-            <div className="col-span-full text-center p-10 text-[var(--bq-paper-400)] text-[13px] md:text-sm">
-              Tidak ada surah yang cocok dengan pencarian &ldquo;{search}&rdquo;
+              <div className="bq-arabic text-2xl text-[var(--bq-paper-300)]">۞</div>
+              <button
+                onClick={() => setVisibleCount((v) => Math.min(v + PAGE_SIZE, filtered.length))}
+                className="px-6 py-2.5 text-sm font-semibold text-[var(--bq-brown-600)] border border-[var(--bq-paper-200)] rounded-full bg-white hover:bg-[var(--bq-paper-50)] transition-colors"
+              >
+                Tampilkan {Math.min(PAGE_SIZE, filtered.length - visibleCount)} surah lagi
+              </button>
+              <div className="text-[11px] text-[var(--bq-paper-400)]">
+                {visibleCount} dari {filtered.length} surah
+              </div>
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

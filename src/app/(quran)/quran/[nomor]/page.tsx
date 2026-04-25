@@ -6,9 +6,12 @@ import { Icon, Icons } from '@/presentation/components/icons';
 import { Button } from '@/presentation/components/ui/Button';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { AyatCard } from '@/presentation/components/quran/AyatCard';
-import { AudioPlayer } from '@/presentation/components/quran/AudioPlayer';
-import { useSurahDetail, useLastRead, useAudioPlayer } from '@/presentation/hooks/useQuran';
+import { TafsirModal } from '@/presentation/components/quran/TafsirModal';
+import { useSurahDetail, useLastRead } from '@/presentation/hooks/useQuran';
 import { useFavorites } from '@/presentation/hooks/useFavorites';
+import { useAudioStore, type AudioTrack } from '@/presentation/hooks/useAudioStore';
+import { usePreferences } from '@/presentation/hooks/usePreferences';
+import { TAJWID_LEGEND } from '@/infrastructure/utils/tajwid';
 
 interface PageParams {
   params: Promise<{ nomor: string }>;
@@ -19,10 +22,18 @@ export default function SurahReadingPage({ params }: PageParams) {
   const nomor = parseInt(resolvedParams.nomor, 10);
   const { surah, loading, error } = useSurahDetail(nomor);
   const { updateLastRead } = useLastRead();
-  const audio = useAudioPlayer();
   const { toggleSurah, toggleAyat, isSurahFavorite, isAyatFavorite } = useFavorites();
-  const [currentAyat, setCurrentAyat] = useState<number | null>(null);
   const [showTransliteration, setShowTransliteration] = useState(true);
+  const { prefs, update: updatePref } = usePreferences();
+
+  // Tafsir modal state
+  const [tafsirAyat, setTafsirAyat] = useState<number | null>(null);
+
+  // Zustand global audio
+  const audioStore = useAudioStore();
+  const currentTrack = audioStore.currentIndex >= 0 && audioStore.currentIndex < audioStore.tracks.length
+    ? audioStore.tracks[audioStore.currentIndex]
+    : null;
 
   // Update last read when user scrolls
   useEffect(() => {
@@ -36,11 +47,39 @@ export default function SurahReadingPage({ params }: PageParams) {
     }
   }, [surah, updateLastRead]);
 
-  const handlePlayAyat = useCallback((ayatNum: number, audioUrl?: string) => {
-    if (!audioUrl) return;
-    setCurrentAyat(ayatNum);
-    audio.toggle(audioUrl);
-  }, [audio]);
+  // Build playlist from surah ayat
+  const handlePlayAyat = useCallback((ayatNum: number) => {
+    if (!surah) return;
+    const tracks: AudioTrack[] = surah.ayat
+      .filter(a => a.audio['05'] || a.audio['01'] || a.audio['02'] || a.audio['03'] || a.audio['04'])
+      .map(a => ({
+        surahNomor: surah.nomor,
+        surahName: surah.namaLatin,
+        ayatNomor: a.nomorAyat,
+        audioByQori: a.audio,
+      }));
+
+    const startIndex = tracks.findIndex(t => t.ayatNomor === ayatNum);
+    if (startIndex < 0) return;
+
+    // If the same track is already playing, toggle
+    if (
+      currentTrack &&
+      currentTrack.surahNomor === surah.nomor &&
+      currentTrack.ayatNomor === ayatNum &&
+      audioStore.playing
+    ) {
+      audioStore.pause();
+    } else if (
+      currentTrack &&
+      currentTrack.surahNomor === surah.nomor &&
+      currentTrack.ayatNomor === ayatNum
+    ) {
+      audioStore.resume();
+    } else {
+      audioStore.setPlaylist(tracks, startIndex);
+    }
+  }, [surah, audioStore, currentTrack]);
 
   const handleBookmark = useCallback((ayatNum: number) => {
     if (!surah) return;
@@ -51,6 +90,48 @@ export default function SurahReadingPage({ params }: PageParams) {
     const text = `${arabic}\n\n${translation}\n\n— ${surah?.namaLatin} : ${ayatNum}`;
     navigator.clipboard.writeText(text).catch(() => {});
   }, [surah]);
+
+  const handleShare = useCallback(async (arabic: string, translation: string, ayatNum: number) => {
+    if (!surah) return;
+    const url = `${window.location.origin}/quran/${surah.nomor}#ayat-${ayatNum}`;
+    const title = `${surah.namaLatin} : ${ayatNum}`;
+    const text = `${arabic}\n\n"${translation}"\n\n— QS. ${surah.namaLatin} : ${ayatNum}`;
+
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      alert('Teks ayat disalin ke clipboard.');
+    } catch {
+      alert('Gagal membagikan ayat.');
+    }
+  }, [surah]);
+
+  // Check if a specific ayat is currently playing
+  const isAyatPlaying = useCallback((ayatNum: number) => {
+    return (
+      currentTrack !== null &&
+      currentTrack.surahNomor === nomor &&
+      currentTrack.ayatNomor === ayatNum &&
+      audioStore.playing
+    );
+  }, [currentTrack, nomor, audioStore.playing]);
+
+  // Auto-scroll to currently playing ayat
+  useEffect(() => {
+    if (currentTrack && currentTrack.surahNomor === nomor) {
+      const el = document.getElementById(`ayat-${currentTrack.ayatNomor}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentTrack?.ayatNomor, currentTrack?.surahNomor, nomor]);
 
   if (loading) {
     return (
@@ -111,40 +192,69 @@ export default function SurahReadingPage({ params }: PageParams) {
       </div>
 
       {/* Navigation + Controls */}
-      <div className="flex justify-between items-center mb-6 px-3 py-2.5 md:px-4 md:py-3 bg-[var(--bq-paper-100)] rounded-md">
-        <div className="flex gap-2">
+      <div className="flex justify-between items-center gap-2 mb-6 px-3 py-2.5 md:px-4 md:py-3 bg-[var(--bq-paper-100)] rounded-md">
+        {/* Prev — desktop only */}
+        <div className="hidden sm:flex gap-2">
           {surah.suratSebelumnya && (
             <Link href={`/quran/${surah.suratSebelumnya.nomor}`} className="no-underline">
-              <Button variant="ghost" size="sm" icon={Icons.ChevronLeft} className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm" icon={Icons.ChevronLeft}>
                 {surah.suratSebelumnya.namaLatin}
               </Button>
-              <Button variant="ghost" size="sm" icon={Icons.ChevronLeft} className="sm:hidden" />
             </Link>
           )}
         </div>
+
+        {/* Mode toggles */}
         <div className="flex gap-2">
           <button
             onClick={() => setShowTransliteration(v => !v)}
             className={`px-3 py-1.5 text-xs font-semibold cursor-pointer border rounded-sm transition-colors ${
-              showTransliteration 
-                ? 'border-[var(--bq-brown-200)] bg-[var(--bq-brown-50)] text-[var(--bq-brown-500)]' 
+              showTransliteration
+                ? 'border-[var(--bq-brown-200)] bg-[var(--bq-brown-50)] text-[var(--bq-brown-500)]'
                 : 'border-[var(--bq-paper-200)] bg-[var(--bq-paper-50)] text-[var(--bq-paper-600)]'
             }`}
           >
             Latin
           </button>
+          <button
+            onClick={() => updatePref('tajwidMode', !prefs.tajwidMode)}
+            className={`px-3 py-1.5 text-xs font-semibold cursor-pointer border rounded-sm transition-colors ${
+              prefs.tajwidMode
+                ? 'border-[var(--bq-gold-300)] bg-[var(--bq-gold-50)] text-[var(--bq-gold-700)]'
+                : 'border-[var(--bq-paper-200)] bg-[var(--bq-paper-50)] text-[var(--bq-paper-600)]'
+            }`}
+            title="Warnai hukum tajwid"
+          >
+            Tajwid
+          </button>
         </div>
+
+        {/* Next — always visible */}
         <div className="flex gap-2">
           {surah.suratSelanjutnya && (
             <Link href={`/quran/${surah.suratSelanjutnya.nomor}`} className="no-underline">
-              <Button variant="ghost" size="sm" iconRight={Icons.ChevronRight} className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm" iconRight={Icons.ChevronRight}>
                 {surah.suratSelanjutnya.namaLatin}
               </Button>
-              <Button variant="ghost" size="sm" iconRight={Icons.ChevronRight} className="sm:hidden" />
             </Link>
           )}
         </div>
       </div>
+
+      {/* Tajwid legend */}
+      {prefs.tajwidMode && (
+        <div className="mb-6 p-3 rounded-xl bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)]">
+          <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--bq-paper-500)] mb-2">Legenda Tajwid</div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+            {TAJWID_LEGEND.map((l) => (
+              <div key={l.rule} className="flex items-center gap-1.5 text-[11px]" title={l.description}>
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} />
+                <span className="text-[var(--bq-paper-700)] font-medium">{l.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Bismillah (except Al-Fatihah and At-Tawbah) */}
       {surah.nomor !== 1 && surah.nomor !== 9 && (
@@ -165,10 +275,14 @@ export default function SurahReadingPage({ params }: PageParams) {
             arabic={a.teksArab}
             translation={a.teksIndonesia}
             transliteration={showTransliteration ? a.teksLatin : undefined}
+            tajwid={prefs.tajwidMode}
             bookmarked={isAyatFavorite(surah.nomor, a.nomorAyat)}
-            onPlay={() => handlePlayAyat(a.nomorAyat, a.audio['05'])}
+            isPlaying={isAyatPlaying(a.nomorAyat)}
+            onPlay={() => handlePlayAyat(a.nomorAyat)}
             onBookmark={() => handleBookmark(a.nomorAyat)}
             onCopy={() => handleCopy(a.teksArab, a.teksIndonesia, a.nomorAyat)}
+            onShare={() => handleShare(a.teksArab, a.teksIndonesia, a.nomorAyat)}
+            onTafsir={() => setTafsirAyat(a.nomorAyat)}
           />
         ))}
       </div>
@@ -194,20 +308,14 @@ export default function SurahReadingPage({ params }: PageParams) {
         ) : <div className="hidden sm:block" />}
       </div>
 
-      {/* Sticky Audio Player */}
-      {currentAyat && (
-        <div className="fixed bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[600px] z-[100]">
-          <AudioPlayer
-            surah={`${surah.namaLatin} : ${currentAyat}`}
-            reciter="Misyari Rasyid Al-Afasi"
-            playing={audio.playing}
-            progress={audio.progress}
-            onPlayPause={() => {
-              const ayat = surah.ayat.find(a => a.nomorAyat === currentAyat);
-              if (ayat?.audio['05']) audio.toggle(ayat.audio['05']);
-            }}
-          />
-        </div>
+      {/* Tafsir Modal */}
+      {tafsirAyat !== null && (
+        <TafsirModal
+          surahNomor={surah.nomor}
+          surahName={surah.namaLatin}
+          ayatNomor={tafsirAyat}
+          onClose={() => setTafsirAyat(null)}
+        />
       )}
     </div>
   );

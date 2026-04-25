@@ -5,13 +5,17 @@ import { SectionHeader } from '@/presentation/components/ui/SectionHeader';
 import { Icon, Icons, Placeholder } from '@/presentation/components/icons';
 import { ProgramCard } from '@/presentation/components/yayasan/ProgramCard';
 import { TestimonialCard } from '@/presentation/components/yayasan/TestimonialCard';
+import { KajianCard } from '@/presentation/components/yayasan/KajianCard';
+import { getLatestKajianVideos } from '@/infrastructure/api/youtubeApi';
 
 export const metadata = {
   title: 'Tentang Yayasan - Qur-anan',
   description: 'Profil Yayasan Baitul Qowwam',
 };
 
-export default function YayasanPage() {
+export default async function YayasanPage() {
+  const kajianVideos = await getLatestKajianVideos(5);
+
   return (
     <div>
       <div className="pt-12 pb-10 px-4 sm:px-6 bg-[var(--bq-paper-100)] border-b border-[var(--bq-paper-200)]">
@@ -49,16 +53,17 @@ export default function YayasanPage() {
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-12">
         <SectionHeader eyebrow="Kegiatan" title="Program rutin" subtitle="Terbuka untuk umum." />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mb-12">
-          <ProgramCard kind="Kajian" title="Kajian Sabtu Pagi" description="Kajian tafsir rutin bersama Ust. Ahmad Faisal setiap pekan." date="Setiap Sabtu · 06:00 WIB" location="Masjid Baitul Qowwam, Cilegon" />
+          <KajianCard videos={kajianVideos} />
           <ProgramCard kind="Pesantren" title="Tahfidz Qur'an" description="Program menghafal Al-Qur'an 30 juz untuk santri usia 12–18 tahun." date="Pendaftaran dibuka Juni 2026" location="Pondok Baitul Qowwam" />
           <ProgramCard kind="Sosial" title="Santunan Yatim" description="Santunan rutin 48 anak yatim & dhuafa di lingkungan sekitar." date="Setiap bulan" location="Panti Baitul Qowwam" />
         </div>
         <SectionHeader eyebrow="Testimoni" title="Kata mereka" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
           <TestimonialCard quote="Alhamdulillah, anak saya tumbuh menjadi hafidz yang berakhlak di pesantren Baitul Qowwam." name="Siti Hadijah" role="Orang tua santri" />
           <TestimonialCard quote="Kajian Sabtu paginya hangat dan substansial. Saya jadi betah mengajak keluarga." name="Rudi Pratama" role="Jamaah kajian" />
           <TestimonialCard quote="Laporan donasinya transparan dan rutin. Saya tenang menitipkan infaq di sini." name="Dewi Anggraini" role="Donatur" />
         </div>
+
       </div>
     </div>
   );

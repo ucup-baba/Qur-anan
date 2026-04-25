@@ -1,40 +1,36 @@
 import type { IQuranRepository } from '@/domain/repositories/quranRepository';
 import type { Surah, SurahDetail, TafsirData } from '@/domain/entities/surah';
+import { idbGet, idbSet } from '@/infrastructure/storage/idbCacheService';
 
-// ─── In-memory + sessionStorage cache ───
-const cache = new Map<string, unknown>();
+// ─── In-memory fast cache (per page session) + IndexedDB (persistent offline) ───
+const memCache = new Map<string, unknown>();
 
 async function fetchJson<T>(url: string, cacheKey?: string): Promise<T> {
-  if (cacheKey && cache.has(cacheKey)) {
-    return cache.get(cacheKey) as T;
+  // 1) Check in-memory first (fastest)
+  if (cacheKey && memCache.has(cacheKey)) {
+    return memCache.get(cacheKey) as T;
   }
 
+  // 2) Check IndexedDB (persistent, survives tab close)
   if (cacheKey && typeof window !== 'undefined') {
-    try {
-      const stored = sessionStorage.getItem('bq:' + cacheKey);
-      if (stored) {
-        const parsed = JSON.parse(stored) as T;
-        cache.set(cacheKey, parsed);
-        return parsed;
-      }
-    } catch {
-      // ignore parse errors
+    const cached = await idbGet<T>(cacheKey);
+    if (cached !== null) {
+      memCache.set(cacheKey, cached);
+      return cached;
     }
   }
 
+  // 3) Fetch from network
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
 
   const json = await res.json();
 
+  // 4) Store in both caches
   if (cacheKey) {
-    cache.set(cacheKey, json);
+    memCache.set(cacheKey, json);
     if (typeof window !== 'undefined') {
-      try {
-        sessionStorage.setItem('bq:' + cacheKey, JSON.stringify(json));
-      } catch {
-        // sessionStorage full — ignore
-      }
+      idbSet(cacheKey, json); // fire-and-forget
     }
   }
 
