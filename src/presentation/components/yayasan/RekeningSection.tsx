@@ -61,7 +61,7 @@ function CopyButton({ text }: { text: string }) {
 
 export function RekeningSection() {
   return (
-    <div style={{
+    <div id="rekening" style={{
       background: 'linear-gradient(160deg, var(--bq-paper-100) 0%, var(--bq-paper-50) 100%)',
       border: '1px solid var(--bq-paper-200)',
       borderRadius: 24, padding: '24px 20px 24px',

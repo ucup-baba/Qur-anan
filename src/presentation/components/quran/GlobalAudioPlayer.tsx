@@ -77,15 +77,80 @@ function VinylDisc({ size = 128, spinning }: { size?: number; spinning?: boolean
   );
 }
 
+/* ─── Speed slider with snap stops ─────────────────── */
+function SpeedSlider({ value, onChange }: { value: PlaybackRate; onChange: (rate: PlaybackRate) => void }) {
+  const idx = PLAYBACK_RATES.indexOf(value);
+  const pct = (idx / (PLAYBACK_RATES.length - 1)) * 100;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newIdx = parseInt(e.target.value, 10);
+    onChange(PLAYBACK_RATES[newIdx] as PlaybackRate);
+  };
+
+  return (
+    <div className="bqvp-slider-wrap">
+      <div className="bqvp-slider-rail">
+        <div className="bqvp-slider-fill" style={{ width: `${pct}%` }} />
+        {PLAYBACK_RATES.map((r, i) => {
+          const stopPct = (i / (PLAYBACK_RATES.length - 1)) * 100;
+          const passed = i <= idx;
+          return (
+            <div
+              key={r}
+              className={`bqvp-slider-dot${passed ? ' bqvp-slider-dot-on' : ''}${i === idx ? ' bqvp-slider-dot-active' : ''}`}
+              style={{ left: `${stopPct}%` }}
+            />
+          );
+        })}
+        <div className="bqvp-slider-thumb" style={{ left: `${pct}%` }}>
+          <span className="bqvp-slider-thumb-label">{value}x</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={PLAYBACK_RATES.length - 1}
+          step={1}
+          value={idx}
+          onChange={handleChange}
+          className="bqvp-slider-input"
+          aria-label="Kecepatan playback"
+        />
+      </div>
+      <div className="bqvp-slider-labels">
+        {PLAYBACK_RATES.map((r, i) => (
+          <button
+            key={r}
+            type="button"
+            className={`bqvp-slider-label-btn${i === idx ? ' bqvp-slider-label-btn-active' : ''}`}
+            onClick={() => onChange(r as PlaybackRate)}
+          >
+            {r}x
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Settings sheet ─────────────────────────────── */
 function SettingsSheet({ onClose }: { onClose: () => void }) {
   const { qoriId, playbackRate, sleepTimerEndsAt, setQori, setPlaybackRate, startSleepTimer, cancelSleepTimer } = useAudioStore();
+  const [closing, setClosing] = useState(false);
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(onClose, 220);
+  };
+
   return (
-    <div className="bqvp-sheet-backdrop" onClick={onClose}>
-      <div className="bqvp-sheet" onClick={e => e.stopPropagation()}>
+    <div className={`bqvp-sheet-backdrop${closing ? ' bqvp-sheet-closing' : ''}`} onClick={handleClose}>
+      <div className={`bqvp-sheet${closing ? ' bqvp-sheet-out' : ''}`} onClick={e => e.stopPropagation()}>
+        {/* Drag handle (visual only) */}
+        <div className="bqvp-sheet-grabber" />
+
         <div className="bqvp-sheet-head">
           <span>Pengaturan Murottal</span>
-          <button onClick={onClose} className="bqvp-sheet-close" aria-label="Tutup">
+          <button onClick={handleClose} className="bqvp-sheet-close" aria-label="Tutup">
             <Icon d={Icons.X} size={15} />
           </button>
         </div>
@@ -105,29 +170,27 @@ function SettingsSheet({ onClose }: { onClose: () => void }) {
 
         <div className="bqvp-section">
           <div className="bqvp-section-label">Kecepatan</div>
-          <div className="bqvp-row-wrap">
-            {PLAYBACK_RATES.map(r => (
-              <button key={r}
-                className={`bqvp-chip${playbackRate === r ? ' bqvp-chip-active' : ''}`}
-                onClick={() => setPlaybackRate(r as PlaybackRate)}>
-                {r}x
-              </button>
-            ))}
-          </div>
+          <SpeedSlider value={playbackRate} onChange={setPlaybackRate} />
         </div>
 
         <div className="bqvp-section">
           <div className="bqvp-section-label">Sleep Timer</div>
+          <div className="bqvp-section-desc">
+            Murottal akan otomatis berhenti setelah waktu yang dipilih — cocok saat ingin tidur sambil mendengarkan.
+          </div>
           {sleepTimerEndsAt ? (
             <div className="bqvp-sleep-active">
-              <span>Pause dalam <SleepCountdown endsAt={sleepTimerEndsAt} /></span>
-              <button onClick={cancelSleepTimer} className="bqvp-chip">Batal</button>
+              <div>
+                <div className="bqvp-sleep-active-label">Akan berhenti dalam</div>
+                <div className="bqvp-sleep-active-time"><SleepCountdown endsAt={sleepTimerEndsAt} /></div>
+              </div>
+              <button onClick={cancelSleepTimer} className="bqvp-chip bqvp-chip-danger">Batalkan</button>
             </div>
           ) : (
             <div className="bqvp-row-wrap">
               {SLEEP_OPTS.map(m => (
                 <button key={m} onClick={() => startSleepTimer(m)} className="bqvp-chip">
-                  {m}m
+                  {m} menit
                 </button>
               ))}
             </div>
@@ -507,74 +570,244 @@ export const GlobalAudioPlayer: React.FC = () => {
         .bqvp-mono { font-family: 'JetBrains Mono', monospace; }
 
         /* ══ Settings Sheet ══ */
+        @keyframes bqvp-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes bqvp-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes bqvp-sheet-slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        @keyframes bqvp-sheet-slide-down {
+          from { transform: translateY(0); }
+          to { transform: translateY(100%); }
+        }
+        @keyframes bqvp-sheet-pop-in {
+          from { transform: translateY(40px) scale(0.94); opacity: 0; }
+          to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes bqvp-sheet-pop-out {
+          from { transform: translateY(0) scale(1); opacity: 1; }
+          to { transform: translateY(20px) scale(0.96); opacity: 0; }
+        }
+
         .bqvp-sheet-backdrop {
           position: fixed; inset: 0; z-index: 100;
-          background: rgba(0,0,0,0.5);
-          backdrop-filter: blur(5px);
+          background: rgba(8, 5, 2, 0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
           display: flex; align-items: flex-end; justify-content: center;
-          animation: bqvp-fadein 0.2s ease;
+          animation: bqvp-backdrop-in 0.25s cubic-bezier(0.22,1,0.36,1);
+        }
+        .bqvp-sheet-backdrop.bqvp-sheet-closing {
+          animation: bqvp-backdrop-out 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
         @media (min-width: 768px) { .bqvp-sheet-backdrop { align-items: center; } }
 
         .bqvp-sheet {
+          position: relative;
           width: 100%; max-width: 480px;
-          background: linear-gradient(145deg, #2d1f0e, #4a3018);
+          background: linear-gradient(145deg, #2d1f0e 0%, #3d2814 50%, #4a3018 100%);
           color: #fff;
-          border-radius: 24px 24px 0 0;
-          padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-          box-shadow: 0 -8px 48px rgba(0,0,0,0.6);
-          border-top: 1px solid rgba(201,162,78,0.25);
-          animation: bqvp-up 0.3s cubic-bezier(0.22,1,0.36,1);
+          border-radius: 28px 28px 0 0;
+          padding: 14px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+          box-shadow:
+            0 -12px 60px rgba(0,0,0,0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          border-top: 1px solid rgba(201,162,78,0.3);
+          animation: bqvp-sheet-slide-up 0.42s cubic-bezier(0.22,1,0.36,1);
+          will-change: transform;
+        }
+        .bqvp-sheet.bqvp-sheet-out {
+          animation: bqvp-sheet-slide-down 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
         @media (min-width: 768px) {
-          .bqvp-sheet { border-radius: 24px; margin: 16px; }
+          .bqvp-sheet {
+            border-radius: 28px; margin: 16px;
+            animation: bqvp-sheet-pop-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+          }
+          .bqvp-sheet.bqvp-sheet-out { animation: bqvp-sheet-pop-out 0.22s cubic-bezier(0.4, 0, 1, 1) forwards; }
         }
+
+        .bqvp-sheet-grabber {
+          width: 36px; height: 4px;
+          background: rgba(255, 255, 255, 0.22);
+          border-radius: 2px;
+          margin: 0 auto 14px;
+        }
+        @media (min-width: 768px) { .bqvp-sheet-grabber { display: none; } }
 
         .bqvp-sheet-head {
           display: flex; justify-content: space-between; align-items: center;
-          font-size: 14px; font-weight: 700; color: #F5F0E6;
-          margin-bottom: 18px; padding-bottom: 14px;
+          font-size: 15px; font-weight: 700; color: #F5F0E6;
+          margin-bottom: 22px; padding-bottom: 16px;
           border-bottom: 1px solid rgba(255,255,255,0.08);
+          letter-spacing: -0.2px;
         }
         .bqvp-sheet-close {
           background: rgba(255,255,255,0.1); border: none; color: #fff;
-          width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+          width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
           display: inline-flex; align-items: center; justify-content: center;
-          transition: background 0.15s;
+          transition: background 0.15s, transform 0.15s;
         }
-        .bqvp-sheet-close:hover { background: rgba(255,255,255,0.18); }
+        .bqvp-sheet-close:hover { background: rgba(255,255,255,0.18); transform: scale(1.05); }
+        .bqvp-sheet-close:active { transform: scale(0.92); }
 
-        .bqvp-section { margin-bottom: 20px; }
+        .bqvp-section { margin-bottom: 24px; }
         .bqvp-section:last-child { margin-bottom: 0; }
         .bqvp-section-label {
           font-size: 10px; text-transform: uppercase; letter-spacing: 1.4px;
-          color: rgba(201,162,78,0.7); font-weight: 700; margin-bottom: 10px;
+          color: rgba(201,162,78,0.85); font-weight: 700; margin-bottom: 10px;
+        }
+        .bqvp-section-desc {
+          font-size: 11.5px; color: rgba(255, 255, 255, 0.55);
+          line-height: 1.5; margin-bottom: 12px; max-width: 380px;
         }
         .bqvp-qori-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
-        .bqvp-row-wrap { display: flex; gap: 6px; flex-wrap: wrap; }
+        .bqvp-row-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
 
         .bqvp-chip {
-          background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.8);
-          padding: 8px 14px; border-radius: 999px;
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.09);
+          color: rgba(255,255,255,0.82);
+          padding: 9px 14px; border-radius: 999px;
           font-size: 12px; font-weight: 600; cursor: pointer;
-          transition: background 0.15s, border-color 0.15s, color 0.15s;
+          transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
         }
-        .bqvp-chip:hover { background: rgba(255,255,255,0.13); }
+        .bqvp-chip:hover { background: rgba(255,255,255,0.12); }
+        .bqvp-chip:active { transform: scale(0.96); }
         .bqvp-chip-active {
           background: linear-gradient(135deg, #C9A24E, #A8842E);
           color: #2d1f0e;
           border-color: transparent;
+          box-shadow: 0 4px 14px rgba(201, 162, 78, 0.35);
+        }
+        .bqvp-chip-danger {
+          background: rgba(220, 38, 38, 0.15);
+          border-color: rgba(220, 38, 38, 0.3);
+          color: #FCA5A5;
+        }
+        .bqvp-chip-danger:hover { background: rgba(220, 38, 38, 0.25); color: #FECACA; }
+
+        /* ── Speed Slider ── */
+        .bqvp-slider-wrap {
+          padding: 8px 4px 0;
+        }
+        .bqvp-slider-rail {
+          position: relative;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          margin: 18px 0 8px;
+        }
+        .bqvp-slider-rail::before {
+          content: '';
+          position: absolute; left: 0; right: 0; top: 50%;
+          transform: translateY(-50%);
+          height: 4px;
+          background: rgba(255, 255, 255, 0.08);
+          border-radius: 2px;
+        }
+        .bqvp-slider-fill {
+          position: absolute; left: 0; top: 50%;
+          transform: translateY(-50%);
+          height: 4px;
+          background: linear-gradient(90deg, #A8842E 0%, #C9A24E 50%, #E5C77A 100%);
+          border-radius: 2px;
+          transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+          box-shadow: 0 0 12px rgba(201, 162, 78, 0.45);
+        }
+        .bqvp-slider-dot {
+          position: absolute; top: 50%;
+          width: 8px; height: 8px;
+          margin-left: -4px; margin-top: -4px;
+          background: rgba(255, 255, 255, 0.18);
+          border-radius: 50%;
+          transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+          pointer-events: none;
+        }
+        .bqvp-slider-dot-on {
+          background: rgba(229, 199, 122, 0.9);
+        }
+        .bqvp-slider-dot-active {
+          transform: scale(1.4);
+          box-shadow: 0 0 8px rgba(229, 199, 122, 0.7);
+        }
+        .bqvp-slider-thumb {
+          position: absolute; top: 50%;
+          width: 28px; height: 28px;
+          margin-left: -14px; margin-top: -14px;
+          background: radial-gradient(circle at 30% 30%, #F5E4B0, #C9A24E 60%, #8B6F2A);
+          border-radius: 50%;
+          box-shadow:
+            0 4px 14px rgba(201, 162, 78, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            0 0 0 4px rgba(201, 162, 78, 0.15);
+          transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.18s;
+          display: flex; align-items: center; justify-content: center;
+          pointer-events: none;
+        }
+        .bqvp-slider-thumb-label {
+          position: absolute;
+          top: -28px; left: 50%; transform: translateX(-50%);
+          font-size: 11px; font-weight: 700;
+          color: #2d1f0e;
+          background: linear-gradient(135deg, #E5C77A, #C9A24E);
+          padding: 3px 9px; border-radius: 999px;
+          white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        .bqvp-slider-input:hover ~ .bqvp-slider-thumb .bqvp-slider-thumb-label,
+        .bqvp-slider-input:active ~ .bqvp-slider-thumb .bqvp-slider-thumb-label,
+        .bqvp-slider-input:focus ~ .bqvp-slider-thumb .bqvp-slider-thumb-label {
+          opacity: 1;
+        }
+        .bqvp-slider-input {
+          position: absolute; inset: 0;
+          width: 100%; height: 100%;
+          opacity: 0;
+          cursor: pointer;
+          margin: 0; padding: 0;
+          appearance: none; -webkit-appearance: none;
+        }
+        .bqvp-slider-input:active ~ .bqvp-slider-thumb {
+          transform: scale(1.12);
+        }
+        .bqvp-slider-labels {
+          display: flex; justify-content: space-between;
+          margin-top: 4px;
+          padding: 0 2px;
+        }
+        .bqvp-slider-label-btn {
+          background: none; border: none; padding: 4px 6px;
+          font-size: 10.5px; font-weight: 600;
+          color: rgba(255, 255, 255, 0.4);
+          cursor: pointer;
+          transition: color 0.2s;
+          font-family: inherit;
+        }
+        .bqvp-slider-label-btn:hover { color: rgba(229, 199, 122, 0.8); }
+        .bqvp-slider-label-btn-active {
+          color: #E5C77A;
+          font-weight: 700;
         }
 
         .bqvp-sleep-active {
           display: flex; justify-content: space-between; align-items: center;
-          background: rgba(201,162,78,0.12);
-          padding: 10px 14px; border-radius: 12px;
+          background: linear-gradient(135deg, rgba(201,162,78,0.18), rgba(201,162,78,0.08));
+          padding: 14px 16px; border-radius: 16px;
           font-size: 12px;
-          border: 1px solid rgba(201,162,78,0.25);
+          border: 1px solid rgba(201,162,78,0.3);
           color: rgba(255,255,255,0.9);
+        }
+        .bqvp-sleep-active-label {
+          font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+          color: rgba(229, 199, 122, 0.7); font-weight: 700; margin-bottom: 4px;
+        }
+        .bqvp-sleep-active-time {
+          font-size: 18px; font-weight: 700;
+          color: #E5C77A;
+          font-family: 'JetBrains Mono', monospace;
         }
       `}</style>
     </>

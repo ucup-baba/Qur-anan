@@ -36,14 +36,24 @@ function formatGregorian(d: Date) {
   return `${DAYS_ID[d.getDay()]}, ${d.getDate()} ${MONTHS_ID[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+const HIJRI_MONTHS_ID = [
+  'Muharram', 'Safar', 'Rabiul Awal', 'Rabiul Akhir',
+  'Jumadil Awal', 'Jumadil Akhir', 'Rajab', "Sya'ban",
+  'Ramadhan', 'Syawal', "Dzulqa'dah", 'Dzulhijjah',
+];
+
 function formatHijri(d: Date) {
   try {
-    const fmt = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
+    const parts = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
       day: 'numeric',
-      month: 'long',
+      month: 'numeric',
       year: 'numeric',
-    });
-    return fmt.format(d).replace(' H', '') + ' H';
+    }).formatToParts(d);
+    const get = (type: string) => parts.find(p => p.type === type)?.value ?? '';
+    const day = get('day');
+    const monthIdx = Math.max(0, Math.min(11, parseInt(get('month'), 10) - 1));
+    const year = get('year').replace(/[^0-9]/g, '');
+    return `${day} ${HIJRI_MONTHS_ID[monthIdx]} ${year} H`;
   } catch {
     return '';
   }

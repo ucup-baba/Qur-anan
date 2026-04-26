@@ -2,11 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Icon, Icons } from '@/presentation/components/icons';
 import { Card } from '@/presentation/components/ui/Card';
 import { Button } from '@/presentation/components/ui/Button';
+import { UserAvatar } from '@/presentation/components/ui/UserAvatar';
 import { useAuth } from '@/presentation/hooks/useAuth';
 
 interface MenuItem {
@@ -58,19 +58,13 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center mb-8">
           {loading ? (
             <div className="w-24 h-24 rounded-full bg-[var(--bq-paper-200)] animate-pulse mb-4" />
-          ) : user?.photoURL ? (
-            <div className="w-24 h-24 rounded-full overflow-hidden mb-4 shadow-lg border-2 border-[var(--bq-paper-50)]">
-              <Image
-                src={user.photoURL}
-                alt={user.displayName || 'User'}
-                width={96}
-                height={96}
-                className="object-cover"
-              />
-            </div>
           ) : (
-            <div className="w-24 h-24 bg-[var(--bq-brown-500)] rounded-full flex items-center justify-center text-white mb-4 shadow-lg">
-              <Icon d={Icons.User} size={48} />
+            <div className="mb-4 shadow-lg" style={{ borderRadius: '50%', border: '2px solid var(--bq-paper-100)' }}>
+              <UserAvatar
+                photoURL={user?.photoURL}
+                displayName={user?.displayName}
+                size={96}
+              />
             </div>
           )}
 

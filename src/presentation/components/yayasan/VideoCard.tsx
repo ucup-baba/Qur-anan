@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import type { YoutubeVideo } from '@/infrastructure/api/youtubeApi';
 
 function formatDate(iso: string) {
@@ -122,12 +121,12 @@ export function VideoCard({ video }: { video: YoutubeVideo }) {
         {/* Thumbnail */}
         <div style={{ position: 'relative', aspectRatio: '16/9', background: 'var(--bq-paper-100)' }}>
           {video.thumbnail ? (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={video.thumbnail}
               alt={video.title}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              style={{ objectFit: 'cover' }}
+              loading="lazy"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

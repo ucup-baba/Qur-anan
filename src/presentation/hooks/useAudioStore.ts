@@ -67,6 +67,11 @@ interface AudioState {
   startSleepTimer: (minutes: number) => void;
   cancelSleepTimer: () => void;
 
+  _onPlaylistEnd: (() => Promise<{ tracks: AudioTrack[]; startIndex?: number } | null> | { tracks: AudioTrack[]; startIndex?: number } | null) | null;
+  setOnPlaylistEnd: (cb: AudioState['_onPlaylistEnd']) => void;
+  _preloadedKey: string | null;
+  _preloadNext: () => void;
+
   _audio: HTMLAudioElement | null;
   _initAudio: () => HTMLAudioElement;
   _resolveUrl: (track: AudioTrack) => string | null;
@@ -109,6 +114,9 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   sleepTimerEndsAt: null,
   _sleepTimeoutId: null,
 
+  _onPlaylistEnd: null,
+  _preloadedKey: null,
+
   _audio: null,
 
   get currentTrack() {
@@ -131,15 +139,20 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
     audio.addEventListener('timeupdate', () => {
       const dur = audio!.duration || 0;
+      const cur = audio!.currentTime;
       set({
-        currentTime: audio!.currentTime,
+        currentTime: cur,
         duration: dur,
-        progress: dur > 0 ? audio!.currentTime / dur : 0,
+        progress: dur > 0 ? cur / dur : 0,
       });
+      // Smart preload: when 50%+ done, warm cache for next track
+      if (dur > 0 && cur / dur > 0.5) {
+        get()._preloadNext();
+      }
     });
 
-    audio.addEventListener('ended', () => {
-      const { repeat, currentIndex, tracks } = get();
+    audio.addEventListener('ended', async () => {
+      const { repeat, currentIndex, tracks, _onPlaylistEnd } = get();
       if (repeat === 'one') {
         audio!.currentTime = 0;
         audio!.play();
@@ -147,11 +160,25 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       }
       if (currentIndex < tracks.length - 1) {
         get().next();
-      } else if (repeat === 'all' && tracks.length > 0) {
-        get().playTrack(0);
-      } else {
-        set({ playing: false, progress: 0 });
+        return;
       }
+      if (repeat === 'all' && tracks.length > 0) {
+        get().playTrack(0);
+        return;
+      }
+      // End of playlist — try to load next surah
+      if (_onPlaylistEnd) {
+        try {
+          const result = await _onPlaylistEnd();
+          if (result && result.tracks.length > 0) {
+            get().setPlaylist(result.tracks, result.startIndex ?? 0);
+            return;
+          }
+        } catch (err) {
+          console.warn('onPlaylistEnd failed:', err);
+        }
+      }
+      set({ playing: false, progress: 0 });
     });
 
     audio.addEventListener('loadedmetadata', () => {
@@ -302,5 +329,23 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const { _sleepTimeoutId } = get();
     if (_sleepTimeoutId) clearTimeout(_sleepTimeoutId);
     set({ sleepTimerEndsAt: null, _sleepTimeoutId: null });
+  },
+
+  setOnPlaylistEnd: (cb) => {
+    set({ _onPlaylistEnd: cb });
+  },
+
+  _preloadNext: () => {
+    if (typeof window === 'undefined') return;
+    const { tracks, currentIndex, _preloadedKey } = get();
+    const nextIdx = currentIndex + 1;
+    if (nextIdx >= tracks.length) return;
+    const url = get()._resolveUrl(tracks[nextIdx]);
+    if (!url) return;
+    const key = `${currentIndex}::${url}`;
+    if (_preloadedKey === key) return;
+    set({ _preloadedKey: key });
+    // Warm browser/SW cache without playing
+    fetch(url, { mode: 'no-cors', cache: 'force-cache' }).catch(() => {});
   },
 }));

@@ -26,6 +26,7 @@ export const BottomNav: React.FC = () => {
           <Link
             key={item.path}
             href={item.path}
+            prefetch
             className={`flex flex-col items-center gap-0.5 no-underline transition-all duration-300 transform ${
               active ? 'text-[#8B5E3C] scale-110' : 'text-[#A0937D] hover:text-[#8B5E3C]'
             }`}

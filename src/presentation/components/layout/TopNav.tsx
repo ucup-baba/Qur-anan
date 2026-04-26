@@ -7,6 +7,8 @@ import { Logo } from './Logo';
 import { Button } from '../ui/Button';
 import { Icons } from '../icons';
 import { GlobalSearch } from '../search/GlobalSearch';
+import { useAuth } from '../../hooks/useAuth';
+import { UserAvatar } from '../ui/UserAvatar';
 
 const NAV_ITEMS = [
   { path: '/',        label: 'Beranda' },
@@ -18,10 +20,10 @@ const NAV_ITEMS = [
 export const TopNav: React.FC = () => {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
+  const { user } = useAuth();
 
   const isActive = (p: string) => p === '/' ? pathname === '/' : pathname.startsWith(p);
 
-  // Ctrl+K / Cmd+K to open search
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
@@ -58,17 +60,29 @@ export const TopNav: React.FC = () => {
           </nav>
 
           <div className="flex gap-2 items-center">
+            {/* Search — desktop only */}
             <Button
               variant="ghost"
               size="sm"
               icon={Icons.Search}
               onClick={() => setSearchOpen(true)}
+              className="hidden md:inline-flex"
             >
               <span className="hidden sm:inline">Cari</span>
               <kbd className="hidden md:inline-flex ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-[var(--bq-paper-200)] bg-[var(--bq-paper-100)] text-[var(--bq-paper-400)]" style={{ fontFamily: 'var(--bq-font-mono)' }}>
                 ⌘K
               </kbd>
             </Button>
+
+            {/* Profile photo — mobile only */}
+            <Link href="/profile" className="md:hidden no-underline" aria-label="Profil">
+              <UserAvatar
+                photoURL={user?.photoURL}
+                displayName={user?.displayName}
+                size={34}
+                style={{ border: '2px solid var(--bq-paper-200)' }}
+              />
+            </Link>
           </div>
         </div>
       </header>

@@ -73,6 +73,7 @@ export default function RootLayout({
     <html
       lang="id"
       className="h-full antialiased"
+      suppressHydrationWarning
     >
       <head>
         <style dangerouslySetInnerHTML={{__html: `

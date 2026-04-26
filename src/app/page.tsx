@@ -7,6 +7,7 @@ import { Button } from '@/presentation/components/ui/Button';
 import { Card } from '@/presentation/components/ui/Card';
 import { LastReadCard } from '@/presentation/components/quran/LastReadCard';
 import { TodayCard } from '@/presentation/components/sholat/TodayCard';
+import { SupportStorySheet } from '@/presentation/components/home/SupportStorySheet';
 import { useSurahList, useLastRead, useSurahDetail } from '@/presentation/hooks/useQuran';
 import { useFavorites } from '@/presentation/hooks/useFavorites';
 import { useAuth } from '@/presentation/hooks/useAuth';
@@ -116,82 +117,76 @@ function PopularSurahs({ surahs }: { surahs: Surah[] }) {
 // ─── Mobile Components ───
 function MobileGreeting() {
   const { user, loading } = useAuth();
-  const firstName = user?.displayName?.split(' ')[0] || (loading ? '...' : 'Sahabat');
+  const rawName = user?.displayName?.split(' ')[0] || (loading ? '' : 'Sahabat');
+  const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+  const hour = new Date().getHours();
+  const waktu = hour < 11 ? 'Pagi' : hour < 15 ? 'Siang' : hour < 18 ? 'Sore' : 'Malam';
 
   return (
-    <div className="md:hidden flex justify-between items-center mb-6 mt-4 px-4">
-      <div>
-        <div className="text-xs text-[var(--bq-paper-500)]">Assalamu'alaikum,</div>
-        <div className="text-base font-bold text-[var(--bq-paper-800)]">{firstName}</div>
+    <div className="md:hidden px-4 mb-5 mt-4">
+      <div className="text-[13px] text-[var(--bq-paper-500)] tracking-wide mb-1">
+        Assalamu'alaikum · Selamat {waktu}
       </div>
-      <div className="flex gap-2">
-        <Link href="/quran" className="w-9 h-9 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] flex items-center justify-center rounded-lg text-[var(--bq-paper-600)]">
-          <Icon d={Icons.Search} size={16} />
-        </Link>
-        <Link
-          href="/profile"
-          aria-label="Profil & Favorit"
-          className="w-9 h-9 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] flex items-center justify-center rounded-lg text-[var(--bq-paper-600)]"
-        >
-          <Icon d={Icons.Bookmark} size={16} />
-        </Link>
+      <div className="bq-serif text-[28px] font-medium text-[var(--bq-paper-800)] leading-tight tracking-tight">
+        {loading ? ' ' : firstName}
       </div>
     </div>
   );
 }
 
 function MobileQuickGrid() {
+  const [supportOpen, setSupportOpen] = useState(false);
+
   const actions: Array<{
     label: string;
     href?: string;
     icon?: typeof Icons.Compass;
     arabic?: string;
-    comingSoon?: boolean;
+    onClick?: () => void;
   }> = [
     { icon: Icons.Compass, label: 'Kiblat', href: '/sholat#kiblat' },
     { arabic: 'ﷲ', label: '99', href: '/asmaul-husna' },
     { icon: Icons.Heart, label: "Do'a", href: '/doa' },
-    { icon: Icons.Mail, label: 'Support', comingSoon: true },
+    { icon: Icons.Mail, label: 'Support', onClick: () => setSupportOpen(true) },
   ];
 
-  const onComingSoon = () => alert('Fitur support akan segera hadir, insyaAllah.');
-
   return (
-    <div className="md:hidden grid grid-cols-4 gap-2 my-6 px-4 items-stretch">
-      {actions.map((q) => {
-        const inner = (
-          <div className={`h-full min-h-[72px] flex flex-col items-center justify-center gap-1.5 py-3 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] rounded-xl relative ${q.comingSoon ? 'opacity-60' : ''}`}>
-            <span className="h-6 flex items-center justify-center">
-              {q.arabic ? (
-                <span className="bq-arabic text-[16px] leading-none text-[var(--bq-brown-500)]">{q.arabic}</span>
-              ) : q.icon ? (
-                <Icon d={q.icon} size={18} className="text-[var(--bq-brown-400)]" />
-              ) : null}
-            </span>
-            <span className="text-[10px] font-semibold text-[var(--bq-paper-600)] leading-tight">{q.label}</span>
-            {q.comingSoon && (
-              <span className="absolute top-1 right-1 text-[8px] font-bold text-[var(--bq-gold-600)] bg-[var(--bq-gold-50)] px-1 rounded">Soon</span>
-            )}
-          </div>
-        );
-        if (q.comingSoon) {
-          return (
-            <button
-              key={q.label}
-              onClick={onComingSoon}
-              className="block w-full h-full p-0 bg-transparent border-0 cursor-pointer text-left"
-            >
-              {inner}
-            </button>
+    <>
+      <div className="md:hidden grid grid-cols-4 gap-2 my-6 px-4 items-stretch">
+        {actions.map((q) => {
+          const inner = (
+            <div className="h-full min-h-[72px] flex flex-col items-center justify-center gap-1.5 py-3 bg-[var(--bq-paper-50)] border border-[var(--bq-paper-200)] rounded-xl relative">
+              <span className="h-6 flex items-center justify-center">
+                {q.arabic ? (
+                  <span className="bq-arabic text-[16px] leading-none text-[var(--bq-brown-500)]">{q.arabic}</span>
+                ) : q.icon ? (
+                  <Icon d={q.icon} size={18} className="text-[var(--bq-brown-400)]" />
+                ) : null}
+              </span>
+              <span className="text-[10px] font-semibold text-[var(--bq-paper-600)] leading-tight">{q.label}</span>
+            </div>
           );
-        }
-        return (
-          <Link key={q.label} href={q.href!} className="no-underline block h-full">
-            {inner}
-          </Link>
-        );
-      })}
-    </div>
+          if (q.onClick) {
+            return (
+              <button
+                key={q.label}
+                onClick={q.onClick}
+                className="block w-full h-full p-0 bg-transparent border-0 cursor-pointer text-left"
+              >
+                {inner}
+              </button>
+            );
+          }
+          return (
+            <Link key={q.label} href={q.href!} className="no-underline block h-full">
+              {inner}
+            </Link>
+          );
+        })}
+      </div>
+      <SupportStorySheet open={supportOpen} onClose={() => setSupportOpen(false)} />
+    </>
   );
 }
 
@@ -320,7 +315,7 @@ export default function HomePage() {
   const { lastRead } = useLastRead();
 
   return (
-    <div className="min-h-screen bg-[var(--bq-paper-100)] md:bg-transparent pb-24 md:pb-0">
+    <div className="min-h-screen bg-[var(--bq-paper-50)] md:bg-transparent pb-24 md:pb-0">
       <div className="hidden md:block">
         <DailyVerseHero />
       </div>

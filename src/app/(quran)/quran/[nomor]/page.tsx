@@ -2,15 +2,18 @@
 
 import React, { useEffect, useCallback, useState, use, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Icon, Icons } from '@/presentation/components/icons';
 import { Button } from '@/presentation/components/ui/Button';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { AyatCard } from '@/presentation/components/quran/AyatCard';
 import { TafsirModal } from '@/presentation/components/quran/TafsirModal';
+import { DownloadSurahButton } from '@/presentation/components/quran/DownloadSurahButton';
 import { useSurahDetail, useLastRead } from '@/presentation/hooks/useQuran';
 import { useFavorites } from '@/presentation/hooks/useFavorites';
 import { useAudioStore, type AudioTrack } from '@/presentation/hooks/useAudioStore';
 import { usePreferences } from '@/presentation/hooks/usePreferences';
+import { quranApi } from '@/infrastructure/api/quranApi';
 import { TAJWID_LEGEND } from '@/infrastructure/utils/tajwid';
 
 interface PageParams {
@@ -20,6 +23,7 @@ interface PageParams {
 export default function SurahReadingPage({ params }: PageParams) {
   const resolvedParams = use(params);
   const nomor = parseInt(resolvedParams.nomor, 10);
+  const router = useRouter();
   const { surah, loading, error } = useSurahDetail(nomor);
   const { updateLastRead } = useLastRead();
   const { toggleSurah, toggleAyat, isSurahFavorite, isAyatFavorite } = useFavorites();
@@ -46,6 +50,34 @@ export default function SurahReadingPage({ params }: PageParams) {
       });
     }
   }, [surah, updateLastRead]);
+
+  // Auto-continue to next surah when current playlist ends
+  useEffect(() => {
+    if (!surah) return;
+    const setOnPlaylistEnd = useAudioStore.getState().setOnPlaylistEnd;
+    setOnPlaylistEnd(async () => {
+      const nextNum = surah.nomor + 1;
+      if (nextNum > 114) return null;
+      try {
+        const nextSurah = await quranApi.getSurah(nextNum);
+        const tracks: AudioTrack[] = nextSurah.ayat
+          .filter(a => a.audio['05'] || a.audio['01'] || a.audio['02'] || a.audio['03'] || a.audio['04'])
+          .map(a => ({
+            surahNomor: nextSurah.nomor,
+            surahName: nextSurah.namaLatin,
+            ayatNomor: a.nomorAyat,
+            audioByQori: a.audio,
+          }));
+        if (tracks.length === 0) return null;
+        router.push(`/quran/${nextNum}`);
+        return { tracks, startIndex: 0 };
+      } catch (err) {
+        console.warn('Failed to load next surah:', err);
+        return null;
+      }
+    });
+    return () => setOnPlaylistEnd(null);
+  }, [surah, router]);
 
   // Build playlist from surah ayat
   const handlePlayAyat = useCallback((ayatNum: number) => {
@@ -186,9 +218,10 @@ export default function SurahReadingPage({ params }: PageParams) {
         <h1 className="bq-serif text-3xl md:text-[38px] font-medium m-0 mb-2 text-[var(--bq-paper-800)] tracking-[-0.5px]">
           {surah.namaLatin}
         </h1>
-        <p className="text-[14px] md:text-[15px] text-[var(--bq-paper-500)] m-0">
+        <p className="text-[14px] md:text-[15px] text-[var(--bq-paper-500)] m-0 mb-4">
           {surah.arti}
         </p>
+        <DownloadSurahButton surah={surah} />
       </div>
 
       {/* Navigation + Controls */}
