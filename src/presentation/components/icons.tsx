@@ -51,6 +51,9 @@ import {
   Cloud,
   MoreVertical,
   MoreHorizontal,
+  Lock,
+  Shield,
+  FileText,
 } from 'lucide-react';
 
 // ─── Icon type (accepts any Lucide icon) ───
@@ -128,6 +131,9 @@ export const Icons = {
   Cloud,
   MoreVertical,
   MoreHorizontal,
+  Lock,
+  Shield,
+  FileText,
 } as const;
 
 // ─── Placeholder ───

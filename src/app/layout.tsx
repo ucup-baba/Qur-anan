@@ -55,6 +55,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'id_ID',
   },
+  verification: {
+    google: 'b1t7ppD3pK1B8ps44WvKKsSKDszxFibBfp33ePxLP_Y',
+  },
 };
 
 export const viewport: Viewport = {

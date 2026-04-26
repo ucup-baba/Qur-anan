@@ -60,7 +60,7 @@ export const TopNav: React.FC = () => {
           </nav>
 
           <div className="flex gap-2 items-center">
-            {/* Search — desktop only */}
+            {/* Search */}
             <Button
               variant="ghost"
               size="sm"
@@ -74,8 +74,8 @@ export const TopNav: React.FC = () => {
               </kbd>
             </Button>
 
-            {/* Profile photo — mobile only */}
-            <Link href="/profile" className="md:hidden no-underline" aria-label="Profil">
+            {/* Profile photo — links to akun tab */}
+            <Link href="/profile" className="no-underline" aria-label="Profil">
               <UserAvatar
                 photoURL={user?.photoURL}
                 displayName={user?.displayName}

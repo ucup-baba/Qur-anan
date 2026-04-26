@@ -23,6 +23,7 @@ interface CachedShape {
   lokasi: string;
   fetchedAt: number;
   dateKey: string;
+  coords?: { lat: number; lng: number };
 }
 
 const todayKey = () => {
@@ -49,7 +50,7 @@ const writeCache = (data: CachedShape) => {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
 };
 
-async function loadByLocation(): Promise<{ jadwal: SholatJadwal; lokasi: string }> {
+async function loadByLocation(): Promise<{ jadwal: SholatJadwal; lokasi: string; coords?: { lat: number; lng: number } }> {
   const position = await new Promise<GeolocationPosition>((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
     navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000, maximumAge: 5 * 60 * 1000 });
@@ -73,7 +74,7 @@ async function loadByLocation(): Promise<{ jadwal: SholatJadwal; lokasi: string 
   }
 
   const response = await getJadwalSholat(kotaId);
-  return { jadwal: response.data.jadwal, lokasi: displayCity };
+  return { jadwal: response.data.jadwal, lokasi: displayCity, coords: { lat, lng } };
 }
 
 export const useSholatStore = create<SholatStore>((set, get) => ({
@@ -98,10 +99,10 @@ export const useSholatStore = create<SholatStore>((set, get) => ({
     const promise = (async () => {
       try {
         set({ loading: true, error: null });
-        const { jadwal, lokasi } = await loadByLocation();
+        const { jadwal, lokasi, coords } = await loadByLocation();
         const fetchedAt = Date.now();
         set({ jadwal, lokasi, loading: false, error: null, fetchedAt, fetching: null });
-        writeCache({ jadwal, lokasi, fetchedAt, dateKey: todayKey() });
+        writeCache({ jadwal, lokasi, fetchedAt, dateKey: todayKey(), coords });
       } catch (err) {
         console.warn('Sholat fetch fallback:', err);
         try {

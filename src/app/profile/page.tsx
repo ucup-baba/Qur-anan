@@ -39,6 +39,20 @@ const menuItems: MenuItem[] = [
     href: '/profile/bantuan',
     tone: 'brown',
   },
+  {
+    icon: Icons.Shield,
+    label: 'Kebijakan Privasi',
+    desc: 'Informasi privasi data',
+    href: '/privacy-policy',
+    tone: 'gold',
+  },
+  {
+    icon: Icons.FileText,
+    label: 'Syarat dan Ketentuan',
+    desc: 'Aturan penggunaan layanan',
+    href: '/terms-of-service',
+    tone: 'brown',
+  },
 ];
 
 export default function ProfilePage() {

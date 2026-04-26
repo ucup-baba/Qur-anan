@@ -623,6 +623,16 @@ export function SholatClient({ initialJadwal, initialLokasi, initialDateStr }: S
           setLokasi(namaLokasi);
           setDateStr(jadwal.tanggal);
           syncPrayerTimesToFirestore(jadwal, kotaId, namaLokasi);
+
+          try {
+            localStorage.setItem(CITY_STORAGE_KEY, JSON.stringify({ 
+              id: kotaId, 
+              lokasi: namaLokasi, 
+              jadwal, 
+              dateKey: `${year}-${month}-${day}`,
+              coords: { lat, lng }
+            }));
+          } catch { /* ignore */ }
         } catch (err: any) {
           setErrorMsg(err.message || 'Terjadi kesalahan saat mengambil lokasi.');
         } finally {
@@ -659,7 +669,12 @@ export function SholatClient({ initialJadwal, initialLokasi, initialDateStr }: S
       syncPrayerTimesToFirestore(jadwal, kotaId, newLokasi);
 
       try {
-        localStorage.setItem(CITY_STORAGE_KEY, JSON.stringify({ id: kotaId, lokasi: newLokasi }));
+        localStorage.setItem(CITY_STORAGE_KEY, JSON.stringify({ 
+          id: kotaId, 
+          lokasi: newLokasi,
+          jadwal,
+          dateKey: `${year}-${month}-${day}`
+        }));
       } catch { /* ignore */ }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal mengambil jadwal sholat.';
@@ -675,17 +690,58 @@ export function SholatClient({ initialJadwal, initialLokasi, initialDateStr }: S
     hasRequestedLoc.current = true;
 
     try {
+      // 1. Cek cache manual / GPS sebelumnya di halaman ini
       const raw = localStorage.getItem(CITY_STORAGE_KEY);
       if (raw) {
-        const saved = JSON.parse(raw) as { id: string; lokasi: string };
+        const saved = JSON.parse(raw);
         if (saved?.id) {
+          const targetDate = new Date();
+          const year = targetDate.getFullYear();
+          const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+          const day = String(targetDate.getDate()).padStart(2, '0');
+          const todayKey = `${year}-${month}-${day}`;
+
+          if (saved.jadwal && saved.dateKey === todayKey) {
+            setJadwalData(saved.jadwal);
+            setLokasi(saved.lokasi);
+            setDateStr(saved.jadwal.tanggal);
+            
+            // Jika sebelumnya pakai GPS, restore koordinatnya untuk Kiblat
+            if (saved.coords) {
+              setUserCoords(saved.coords);
+              setQiblaAngle(getQiblaAngle(saved.coords.lat, saved.coords.lng));
+            }
+            return;
+          }
+          // Jika beda hari, ambil ulang datanya berdasarkan ID kota
           fetchByKotaId(saved.id, saved.lokasi);
           return;
         }
       }
+
+      // 2. Jika tidak ada, cek cache dari beranda (useSholat.ts)
+      const rawBeranda = localStorage.getItem('bq_sholat_cache_v1');
+      if (rawBeranda) {
+        const savedBeranda = JSON.parse(rawBeranda);
+        const d = new Date();
+        const bqTodayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (savedBeranda.dateKey === bqTodayKey && savedBeranda.jadwal) {
+          setJadwalData(savedBeranda.jadwal);
+          setLokasi(savedBeranda.lokasi);
+          setDateStr(savedBeranda.jadwal.tanggal);
+          
+          if (savedBeranda.coords) {
+            setUserCoords(savedBeranda.coords);
+            setQiblaAngle(getQiblaAngle(savedBeranda.coords.lat, savedBeranda.coords.lng));
+          }
+          return;
+        }
+      }
+
     } catch {
       // ignore
     }
+    
     handleUseLocation();
   }, [handleUseLocation, fetchByKotaId]);
 

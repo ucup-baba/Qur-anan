@@ -20,6 +20,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
+googleProvider.addScope("https://www.googleapis.com/auth/youtube.readonly");
 
 export const initAnalytics = async () => {
   if (typeof window !== "undefined") {

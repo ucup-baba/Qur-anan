@@ -88,7 +88,15 @@ export const Footer: React.FC = () => (
 
       <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row justify-between flex-wrap gap-3 text-[11px] text-[var(--bq-paper-400)]">
         <div>© 2026 Yayasan Baitul Qowwam · Semua hak dilindungi</div>
-        <div>Qur&apos;an data: equran.id &amp; alquran.cloud</div>
+        <div className="flex flex-wrap gap-4 items-center">
+          <Link href="/privacy-policy" className="hover:text-white transition-colors" style={{ textDecoration: 'none', color: 'inherit' }}>
+            Kebijakan Privasi
+          </Link>
+          <Link href="/terms-of-service" className="hover:text-white transition-colors" style={{ textDecoration: 'none', color: 'inherit' }}>
+            Syarat &amp; Ketentuan
+          </Link>
+          <span>Qur&apos;an data: equran.id &amp; alquran.cloud</span>
+        </div>
       </div>
     </div>
   </footer>
