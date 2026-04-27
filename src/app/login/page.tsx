@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/presentation/hooks/useAuth';
+import { isAdminEmail } from '@/infrastructure/auth/admin';
 
 export default function LoginPage() {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -13,12 +14,11 @@ export default function LoginPage() {
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const ADMIN_EMAIL = 'baitulqowwam123@gmail.com';
   const redirect = searchParams.get('redirect') || '/';
 
   useEffect(() => {
     if (!loading && user) {
-      if (user.email === ADMIN_EMAIL) {
+      if (isAdminEmail(user.email)) {
         router.replace('/admin/berita');
       } else {
         router.replace(redirect);
@@ -45,7 +45,7 @@ export default function LoginPage() {
             Selamat Datang
           </h1>
           <p className="text-sm text-[var(--bq-paper-500)] text-center mt-2">
-            Masuk untuk menyimpan favorit, sinkronisasi bacaan, dan fitur lainnya.
+            Masuk untuk menyimpan pilihan, sinkronisasi bacaan, dan fitur lainnya.
           </p>
         </div>
 

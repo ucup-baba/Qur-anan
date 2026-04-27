@@ -127,6 +127,46 @@ export function KajianCard({ videos }: KajianCardProps) {
 
   const activeVideo = videos[activeIdx];
 
+  if (videos.length === 0) {
+    return (
+      <div style={{
+        background: 'var(--bq-paper-50)',
+        border: '1px dashed var(--bq-paper-200)',
+        borderRadius: 'var(--bq-radius-lg)',
+        padding: '32px 20px',
+        textAlign: 'center',
+      }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%',
+          background: 'var(--bq-paper-100)',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 12,
+        }}>
+          <Icon d={Icons.Play} size={26} style={{ color: 'var(--bq-brown-400)' }} />
+        </div>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--bq-paper-800)', margin: '0 0 6px' }}>
+          Belum ada video kajian
+        </h3>
+        <p style={{ fontSize: 13, color: 'var(--bq-paper-500)', margin: '0 0 14px', lineHeight: 1.5 }}>
+          Kajian terbaru akan ditampilkan di sini ketika tersedia di channel YouTube.
+        </p>
+        <a
+          href="https://www.youtube.com/channel/UCp3PWQTp3E9nnJ5d-9XQJCw"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '8px 14px', borderRadius: 999,
+            background: 'var(--bq-brown-500)', color: '#fff',
+            fontSize: 12, fontWeight: 700, textDecoration: 'none',
+          }}
+        >
+          Buka Channel YouTube
+        </a>
+      </div>
+    );
+  }
+
   return (
     <>
       <div style={{ background: 'var(--bq-paper-50)', border: '1px solid var(--bq-paper-200)', borderRadius: 'var(--bq-radius-lg)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>

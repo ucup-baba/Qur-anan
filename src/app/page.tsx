@@ -11,6 +11,7 @@ import { SupportStorySheet } from '@/presentation/components/home/SupportStorySh
 import { useSurahList, useLastRead, useSurahDetail } from '@/presentation/hooks/useQuran';
 import { useFavorites } from '@/presentation/hooks/useFavorites';
 import { useAuth } from '@/presentation/hooks/useAuth';
+import { EmptyState } from '@/presentation/components/ui/EmptyState';
 import type { Surah } from '@/domain/entities/surah';
 
 // ─── Helper: Section Header ───
@@ -259,8 +260,17 @@ function FavoriteSurahs({ surahs }: { surahs: Surah[] }) {
   const items = surahs.filter(s => favorites.surahs.includes(s.nomor));
 
   if (items.length === 0) return (
-    <div className="px-4 md:px-0 py-8 text-center text-[var(--bq-paper-400)] text-sm border-2 border-dashed border-[var(--bq-paper-200)] rounded-2xl mx-4 md:mx-0">
-      Belum ada surah pilihan.
+    <div className="mx-4 md:mx-0">
+      <EmptyState
+        icon="Heart"
+        title="Belum ada surah pilihan"
+        description="Tandai surah favoritmu dengan ikon hati untuk akses cepat."
+        action={
+          <Link href="/quran" className="text-[13px] font-semibold text-[var(--bq-brown-500)] hover:underline">
+            Jelajahi 114 Surah →
+          </Link>
+        }
+      />
     </div>
   );
 
@@ -289,10 +299,14 @@ function FavoriteSurahs({ surahs }: { surahs: Surah[] }) {
 // ─── Ayat Pilihan (Swipable) ───
 function FavoriteAyats({ surahs }: { surahs: Surah[] }) {
   const { favorites } = useFavorites();
-  
+
   if (favorites.ayats.length === 0) return (
-    <div className="px-4 md:px-0 py-8 text-center text-[var(--bq-paper-400)] text-sm border-2 border-dashed border-[var(--bq-paper-200)] rounded-2xl mx-4 md:mx-0">
-      Belum ada ayat pilihan.
+    <div className="mx-4 md:mx-0">
+      <EmptyState
+        icon="Bookmark"
+        title="Belum ada ayat pilihan"
+        description="Bookmark ayat yang ingin kamu kunjungi lagi nanti."
+      />
     </div>
   );
 
@@ -316,9 +330,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[var(--bq-paper-50)] md:bg-transparent pb-24 md:pb-0">
-      <div className="hidden md:block">
-        <DailyVerseHero />
-      </div>
+      <DailyVerseHero />
+
 
       <div className="max-w-[1200px] mx-auto md:px-6 md:py-10">
         <MobileGreeting />
@@ -350,7 +363,7 @@ export default function HomePage() {
 
         {/* Section 1: Surah Pilihan */}
         <div className="mb-4">
-          <SectionHeader title="Surah Pilihan" subtitle="Favorit Anda" href="/quran" />
+          <SectionHeader title="Surah Pilihan" subtitle="Tersimpan untuk akses cepat" href="/quran" />
           {loading ? (
             <div className="px-4 py-4 flex gap-4 overflow-hidden">
                {[1,2,3].map(i => <div key={i} className="w-[280px] h-[160px] bg-[var(--bq-paper-200)] rounded-2xl animate-pulse shrink-0" />)}

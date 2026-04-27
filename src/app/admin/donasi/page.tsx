@@ -12,10 +12,12 @@ import {
   updateDonationCampaign,
   type DonationCampaign,
 } from '@/infrastructure/firebase/donations';
+import { useToast } from '@/presentation/components/ui/Toast';
 
 const DESC_LIMIT = 150;
 
 export default function AdminDonasiPage() {
+  const toast = useToast();
   const [campaigns, setCampaigns] = useState<DonationCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,7 +54,7 @@ export default function AdminDonasiPage() {
 
   const handleSave = async () => {
     if (!title.trim() || !description.trim() || !posterFile) {
-      alert('Mohon lengkapi judul, deskripsi, dan poster.');
+      toast.show('Mohon lengkapi judul, deskripsi, dan poster.', 'error');
       return;
     }
 
@@ -72,7 +74,7 @@ export default function AdminDonasiPage() {
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (e) {
       console.error('Failed to save campaign', e);
-      alert('Gagal menyimpan kampanye.');
+      toast.show('Gagal menyimpan kampanye.', 'error');
     } finally {
       setSaving(false);
     }

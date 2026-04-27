@@ -15,6 +15,9 @@ import { useAudioStore, type AudioTrack } from '@/presentation/hooks/useAudioSto
 import { usePreferences } from '@/presentation/hooks/usePreferences';
 import { quranApi } from '@/infrastructure/api/quranApi';
 import { TAJWID_LEGEND } from '@/infrastructure/utils/tajwid';
+import { useToast } from '@/presentation/components/ui/Toast';
+import { Skeleton, SkeletonAyat } from '@/presentation/components/ui/Skeleton';
+import { Breadcrumb } from '@/presentation/components/ui/Breadcrumb';
 
 interface PageParams {
   params: Promise<{ nomor: string }>;
@@ -29,6 +32,7 @@ export default function SurahReadingPage({ params }: PageParams) {
   const { toggleSurah, toggleAyat, isSurahFavorite, isAyatFavorite } = useFavorites();
   const [showTransliteration, setShowTransliteration] = useState(true);
   const { prefs, update: updatePref } = usePreferences();
+  const toast = useToast();
 
   // Tafsir modal state
   const [tafsirAyat, setTafsirAyat] = useState<number | null>(null);
@@ -139,11 +143,11 @@ export default function SurahReadingPage({ params }: PageParams) {
     }
     try {
       await navigator.clipboard.writeText(`${text}\n${url}`);
-      alert('Teks ayat disalin ke clipboard.');
+      toast.show('Teks ayat disalin ke clipboard.', 'success');
     } catch {
-      alert('Gagal membagikan ayat.');
+      toast.show('Gagal membagikan ayat.', 'error');
     }
-  }, [surah]);
+  }, [surah, toast]);
 
   // Check if a specific ayat is currently playing
   const isAyatPlaying = useCallback((ayatNum: number) => {
@@ -167,9 +171,15 @@ export default function SurahReadingPage({ params }: PageParams) {
 
   if (loading) {
     return (
-      <div className="max-w-[900px] mx-auto py-20 px-4 md:px-6 text-center">
-        <div className="bq-arabic text-4xl md:text-5xl text-[var(--bq-paper-300)] mb-4">بِسْمِ ٱللَّهِ</div>
-        <div className="text-sm text-[var(--bq-paper-400)]">Memuat surah...</div>
+      <div className="max-w-[900px] mx-auto py-12 px-4 md:px-6">
+        <div className="text-center mb-10">
+          <Skeleton width={120} height={14} rounded="sm" className="mx-auto mb-4" />
+          <Skeleton width={240} height={36} rounded="md" className="mx-auto mb-3" />
+          <Skeleton width={180} height={14} rounded="sm" className="mx-auto" />
+        </div>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonAyat key={i} />
+        ))}
       </div>
     );
   }
@@ -190,7 +200,38 @@ export default function SurahReadingPage({ params }: PageParams) {
   }
 
   return (
-    <div className="max-w-[800px] mx-auto pt-8 pb-24 md:pb-[100px] px-4 md:px-6">
+    <div
+      className="max-w-[800px] mx-auto pt-8 pb-24 md:pb-[100px] px-4 md:px-6"
+      onTouchStart={(e) => {
+        const t = e.touches[0];
+        (e.currentTarget as HTMLDivElement & { _bqSwipeStart?: { x: number; y: number; t: number } })._bqSwipeStart = {
+          x: t.clientX, y: t.clientY, t: Date.now(),
+        };
+      }}
+      onTouchEnd={(e) => {
+        const start = (e.currentTarget as HTMLDivElement & { _bqSwipeStart?: { x: number; y: number; t: number } })._bqSwipeStart;
+        if (!start) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - start.x;
+        const dy = t.clientY - start.y;
+        const dt = Date.now() - start.t;
+        if (dt > 600) return;
+        if (Math.abs(dx) < 80 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        if (dx < 0 && surah.suratSelanjutnya) {
+          router.push(`/quran/${surah.suratSelanjutnya.nomor}`);
+        } else if (dx > 0 && surah.suratSebelumnya) {
+          router.push(`/quran/${surah.suratSebelumnya.nomor}`);
+        }
+      }}
+    >
+      <Breadcrumb
+        className="mb-4"
+        items={[
+          { label: 'Beranda', href: '/' },
+          { label: "Qur'an", href: '/quran' },
+          { label: surah.namaLatin },
+        ]}
+      />
       {/* Surah Header */}
       <div className="text-center mb-8 md:mb-10 py-8 px-6 rounded-2xl relative overflow-hidden group" style={{ background: 'linear-gradient(135deg, var(--bq-paper-100) 0%, #fff 100%)', border: '1px solid var(--bq-paper-200)' }}>
         <button 

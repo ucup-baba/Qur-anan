@@ -7,6 +7,7 @@ import { usePreferences, type Preferences } from '@/presentation/hooks/usePrefer
 import { useOfflineSurah } from '@/presentation/hooks/useOfflineSurah';
 import { useSync } from '@/presentation/components/providers/SyncProvider';
 import { useAuth } from '@/presentation/hooks/useAuth';
+import { Breadcrumb } from '@/presentation/components/ui/Breadcrumb';
 
 export default function SettingsPage() {
   const { prefs, update, reset, hydrated } = usePreferences();
@@ -144,13 +145,59 @@ export default function SettingsPage() {
           </div>
         </Section>
 
+        <Section title="Bahasa">
+          <div className="py-3">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <div className="text-sm font-semibold">Bahasa Aplikasi</div>
+                <div className="text-xs text-[var(--bq-paper-500)]">Pilih bahasa antarmuka</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { code: 'id', label: 'Indonesia', flag: '🇮🇩' },
+                { code: 'ms', label: 'Melayu', flag: '🇲🇾' },
+                { code: 'en', label: 'English', flag: '🇬🇧' },
+              ] as const).map(({ code, label, flag }) => {
+                const active = prefs.locale === code;
+                const disabled = code !== 'id';
+                return (
+                  <button
+                    key={code}
+                    onClick={() => !disabled && update('locale', code)}
+                    disabled={disabled}
+                    className={`relative flex flex-col items-center gap-1 px-3 py-3 rounded-xl border text-xs font-semibold transition-colors ${
+                      active
+                        ? 'bg-[var(--bq-brown-500)] text-white border-[var(--bq-brown-500)]'
+                        : disabled
+                          ? 'bg-[var(--bq-paper-100)] text-[var(--bq-paper-400)] border-[var(--bq-paper-200)] cursor-not-allowed'
+                          : 'bg-white text-[var(--bq-paper-700)] border-[var(--bq-paper-200)] hover:border-[var(--bq-brown-300)]'
+                    }`}
+                  >
+                    <span className="text-lg leading-none">{flag}</span>
+                    <span>{label}</span>
+                    {disabled && (
+                      <span className="absolute top-1 right-1 text-[8px] uppercase tracking-wide bg-[var(--bq-paper-300)] text-white px-1 py-0.5 rounded">
+                        Soon
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="text-[11px] text-[var(--bq-paper-500)] mt-3 leading-relaxed">
+              Bahasa lain akan tersedia segera. Saat ini hanya Bahasa Indonesia yang aktif.
+            </div>
+          </div>
+        </Section>
+
         <Section title="Sinkronisasi">
           <div className="py-3">
             {user ? (
               <>
                 <div className="text-sm font-semibold">Akun: {user.email}</div>
                 <div className="text-xs text-[var(--bq-paper-500)] mb-3">
-                  Last-read, bookmark, favorit & pengaturan tersinkron otomatis.
+                  Last-read, surah pilihan, ayat pilihan & pengaturan tersinkron otomatis.
                   {lastSyncedAt && (
                     <> Terakhir: {new Date(lastSyncedAt).toLocaleTimeString('id-ID')}.</>
                   )}
@@ -241,12 +288,13 @@ function ToggleRow({
 
 function BackLink() {
   return (
-    <Link
-      href="/profile"
-      className="inline-flex items-center gap-1 text-xs text-[var(--bq-paper-500)] hover:text-[var(--bq-brown-500)] mb-4"
-    >
-      <Icon d={Icons.ChevronLeft} size={14} />
-      Profil
-    </Link>
+    <Breadcrumb
+      className="mb-4"
+      items={[
+        { label: 'Beranda', href: '/' },
+        { label: 'Profil', href: '/profile' },
+        { label: 'Pengaturan' },
+      ]}
+    />
   );
 }

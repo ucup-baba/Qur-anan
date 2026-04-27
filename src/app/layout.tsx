@@ -11,28 +11,43 @@ import { AppProviders } from "@/presentation/components/providers/AppProviders";
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500", "600", "700"],
+  preload: true,
+  fallback: ["system-ui", "Segoe UI", "Roboto", "sans-serif"],
+  adjustFontFallback: true,
 });
 
 const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500"],
+  preload: false,
+  fallback: ["Georgia", "serif"],
+  adjustFontFallback: true,
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "600"],
+  preload: false,
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
 });
 
 const amiriQuran = Amiri_Quran({
   weight: "400",
   subsets: ["arabic"],
   display: "swap",
+  preload: false,
+  fallback: ["Amiri", "Scheherazade", "serif"],
 });
 
 const amiri = Amiri({
   weight: ["400", "700"],
   subsets: ["arabic"],
   display: "swap",
+  preload: false,
+  fallback: ["Scheherazade", "serif"],
 });
 
 export const metadata: Metadata = {
@@ -45,8 +60,11 @@ export const metadata: Metadata = {
     title: "Qur'anan",
   },
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/icons/icon-192.png',
   },
   keywords: [
     'quran', 'al-quran', 'sholat', 'kiblat', 'islami', 

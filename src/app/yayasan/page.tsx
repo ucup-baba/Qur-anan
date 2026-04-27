@@ -49,7 +49,9 @@ export default async function YayasanPage() {
                 <Link href="/donasi#rekening" className="no-underline">
                   <Button variant="primary" size="lg" icon={Icons.Heart2}>Donasi</Button>
                 </Link>
-                <Button variant="secondary" size="lg" iconRight={Icons.ArrowRight}>Kegiatan</Button>
+                <Link href="#program" className="no-underline">
+                  <Button variant="secondary" size="lg" iconRight={Icons.ArrowRight}>Kegiatan</Button>
+                </Link>
               </div>
             </div>
             <BannerSlider
@@ -71,9 +73,11 @@ export default async function YayasanPage() {
         <SectionHeader eyebrow="Informasi" title="Berita terbaru" subtitle="Kabar & artikel dari yayasan." />
         <ArticleSlider />
 
-        <SectionHeader eyebrow="Kegiatan" title="Program rutin" subtitle="Terbuka untuk umum." />
-        <div className="grid grid-cols-1 gap-5 mb-12">
-          <KajianCard videos={kajianVideos} />
+        <div id="program" className="scroll-mt-24">
+          <SectionHeader eyebrow="Kegiatan" title="Program rutin" subtitle="Terbuka untuk umum." />
+          <div className="grid grid-cols-1 gap-5 mb-12">
+            <KajianCard videos={kajianVideos} />
+          </div>
         </div>
 
       </div>

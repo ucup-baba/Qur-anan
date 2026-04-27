@@ -109,7 +109,7 @@ export default function ProfilePage() {
               Masuk untuk sinkronisasi
             </div>
             <p className="text-xs text-[var(--bq-paper-600)] mb-3">
-              Simpan favorit, last read, dan preferensi di semua perangkat.
+              Simpan surah pilihan, last read, dan preferensi di semua perangkat.
             </p>
             <Link href="/login" className="no-underline">
               <Button variant="primary" size="sm">

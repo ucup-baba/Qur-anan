@@ -3,8 +3,20 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const footerLinks = {
-  explore: ['Beranda', "Baca Qur'an", 'Jadwal Sholat', "Do'a Harian", 'Asmaul Husna'],
-  yayasan: ['Tentang Kami', 'Program', 'Donasi', 'Laporan', 'Kontak'],
+  explore: [
+    { label: 'Beranda', href: '/' },
+    { label: "Baca Qur'an", href: '/quran' },
+    { label: 'Jadwal Sholat', href: '/sholat' },
+    { label: "Do'a Harian", href: '/doa' },
+    { label: 'Asmaul Husna', href: '/asmaul-husna' },
+  ],
+  yayasan: [
+    { label: 'Tentang Kami', href: '/yayasan' },
+    { label: 'Program', href: '/yayasan#program' },
+    { label: 'Donasi', href: '/donasi' },
+    { label: 'Berita', href: '/yayasan/berita' },
+    { label: 'Kontak', href: 'https://wa.me/6285643386134', external: true },
+  ],
 };
 
 export const Footer: React.FC = () => (
@@ -36,7 +48,13 @@ export const Footer: React.FC = () => (
         <div>
           <div className="text-[11px] font-semibold tracking-widest uppercase text-[var(--bq-paper-400)] mb-3">Jelajahi</div>
           {footerLinks.explore.map(x => (
-            <div key={x} className="text-[13px] py-1 text-[var(--bq-paper-200)] hover:text-white transition-colors cursor-pointer">{x}</div>
+            <Link
+              key={x.href}
+              href={x.href}
+              className="block text-[13px] py-1 text-[var(--bq-paper-200)] hover:text-white transition-colors no-underline"
+            >
+              {x.label}
+            </Link>
           ))}
         </div>
 
@@ -44,7 +62,25 @@ export const Footer: React.FC = () => (
         <div>
           <div className="text-[11px] font-semibold tracking-widest uppercase text-[var(--bq-paper-400)] mb-3">Yayasan</div>
           {footerLinks.yayasan.map(x => (
-            <div key={x} className="text-[13px] py-1 text-[var(--bq-paper-200)] hover:text-white transition-colors cursor-pointer">{x}</div>
+            x.external ? (
+              <a
+                key={x.href}
+                href={x.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-[13px] py-1 text-[var(--bq-paper-200)] hover:text-white transition-colors no-underline"
+              >
+                {x.label}
+              </a>
+            ) : (
+              <Link
+                key={x.href}
+                href={x.href}
+                className="block text-[13px] py-1 text-[var(--bq-paper-200)] hover:text-white transition-colors no-underline"
+              >
+                {x.label}
+              </Link>
+            )
           ))}
         </div>
 

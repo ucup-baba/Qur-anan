@@ -355,6 +355,13 @@ export const GlobalAudioPlayer: React.FC = () => {
         @media (min-width: 768px) {
           .bqvp-wrap { bottom: 28px; }
         }
+        /* Touch devices: always expanded, fuller width, bigger targets */
+        @media (hover: none) and (pointer: coarse) {
+          .bqvp-wrap,
+          .bqvp-wrap.bqvp-expanded {
+            width: min(360px, calc(100vw - 24px));
+          }
+        }
 
         /* ── Disc anchor: peeks above card ── */
         .bqvp-disc-anchor {
@@ -413,6 +420,13 @@ export const GlobalAudioPlayer: React.FC = () => {
           height: 72px;
           opacity: 1;
           margin-bottom: 8px;
+        }
+        @media (hover: none) and (pointer: coarse) {
+          .bqvp-wrap .bqvp-top-row { height: 72px; opacity: 1; margin-bottom: 8px; }
+          .bqvp-wrap .bqvp-disc-anchor { height: 0; overflow: hidden; }
+          .bqvp-wrap .bqvp-time { width: 32px; opacity: 1; }
+          .bqvp-wrap .bqvp-seek-thumb { opacity: 1; }
+          .bqvp-wrap .bqvp-btn-close { opacity: 1; pointer-events: auto; }
         }
 
         .bqvp-disc-sm-wrap {
@@ -509,6 +523,9 @@ export const GlobalAudioPlayer: React.FC = () => {
           position: relative;
           flex-shrink: 0;
         }
+        @media (hover: none) and (pointer: coarse) {
+          .bqvp-btn-icon { width: 44px; height: 44px; }
+        }
         .bqvp-btn-icon:hover { color: #fff; background: rgba(255,255,255,0.08); }
         .bqvp-btn-active { color: #C9A24E !important; }
 
@@ -518,6 +535,9 @@ export const GlobalAudioPlayer: React.FC = () => {
           transition: width 0.25s ease, opacity 0.2s ease;
         }
         .bqvp-wrap.bqvp-expanded .bqvp-btn-side { width: 36px; opacity: 1; }
+        @media (hover: none) and (pointer: coarse) {
+          .bqvp-wrap .bqvp-btn-side { width: 44px; opacity: 1; }
+        }
 
         /* Close button (top right) */
         .bqvp-btn-close {
@@ -557,6 +577,9 @@ export const GlobalAudioPlayer: React.FC = () => {
           box-shadow: 0 3px 12px rgba(201,162,78,0.5);
           flex-shrink: 0;
           transition: filter 0.15s, transform 0.1s;
+        }
+        @media (hover: none) and (pointer: coarse) {
+          .bqvp-btn-play { width: 56px; height: 56px; }
         }
         .bqvp-btn-play:hover { filter: brightness(1.12); transform: scale(1.05); }
         .bqvp-btn-play:active { transform: scale(0.97); }

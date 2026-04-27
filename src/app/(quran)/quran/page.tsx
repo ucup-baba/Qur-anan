@@ -8,6 +8,7 @@ import { Badge } from '@/presentation/components/ui/Badge';
 import { SurahListItem } from '@/presentation/components/quran/SurahListItem';
 import { useSurahList } from '@/presentation/hooks/useQuran';
 import { useFavorites } from '@/presentation/hooks/useFavorites';
+import { SkeletonSurahCard } from '@/presentation/components/ui/Skeleton';
 
 type FilterType = 'all' | 'Mekah' | 'Madinah' | 'favorite';
 
@@ -114,9 +115,10 @@ export default function QuranListPage() {
 
       {/* Surah List */}
       {loading ? (
-        <div className="text-center p-12 md:p-16 text-[var(--bq-paper-400)]">
-          <div className="bq-arabic text-3xl md:text-4xl mb-3">بِسْمِ ٱللَّهِ</div>
-          <div className="text-[13px] md:text-sm">Memuat daftar surah...</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonSurahCard key={i} />
+          ))}
         </div>
       ) : error ? (
         <div className="text-center p-12 md:p-16 text-red-500">

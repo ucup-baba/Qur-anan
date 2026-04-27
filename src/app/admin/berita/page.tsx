@@ -8,6 +8,8 @@ import remarkGfm from 'remark-gfm';
 import { useAuth } from '@/presentation/hooks/useAuth';
 import { Icon, Icons } from '@/presentation/components/icons';
 import { Button } from '@/presentation/components/ui/Button';
+import { useToast } from '@/presentation/components/ui/Toast';
+import { isAdminEmail } from '@/infrastructure/auth/admin';
 import {
   uploadThumbnail,
   createArticle,
@@ -19,11 +21,10 @@ import {
 // Dynamic import to avoid SSR issues with EasyMDE
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false });
 
-const ADMIN_EMAIL = 'baitulqowwam123@gmail.com';
-
 export default function AdminBeritaPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const toast = useToast();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -51,7 +52,7 @@ export default function AdminBeritaPage() {
   }, []);
 
   useEffect(() => {
-    if (user?.email === ADMIN_EMAIL) loadArticles();
+    if (isAdminEmail(user?.email)) loadArticles();
   }, [user, loadArticles]);
 
   // ── Thumbnail preview ──
@@ -82,7 +83,7 @@ export default function AdminBeritaPage() {
   // ── Handle save ──
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
-      alert('Judul dan konten tidak boleh kosong.');
+      toast.show('Judul dan konten tidak boleh kosong.', 'error');
       return;
     }
 
@@ -103,7 +104,7 @@ export default function AdminBeritaPage() {
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (e) {
       console.error('Failed to save article', e);
-      alert('Gagal menyimpan artikel. Silakan coba lagi.');
+      toast.show('Gagal menyimpan artikel. Silakan coba lagi.', 'error');
     }
     setSaving(false);
   };

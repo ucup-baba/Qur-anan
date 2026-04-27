@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Icon, Icons } from '@/presentation/components/icons';
+import { Breadcrumb } from '@/presentation/components/ui/Breadcrumb';
 
 interface FAQ {
   q: string;
@@ -11,8 +12,8 @@ interface FAQ {
 
 const faqs: FAQ[] = [
   {
-    q: 'Bagaimana cara menyimpan surah favorit?',
-    a: 'Tekan ikon bookmark di pojok kanan atas halaman baca surah atau di daftar surah. Favorit akan muncul di beranda bagian "Surah Pilihan".',
+    q: 'Bagaimana cara menyimpan surah pilihan?',
+    a: 'Tekan ikon bookmark di pojok kanan atas halaman baca surah atau di daftar surah. Surah tersimpan akan muncul di beranda bagian "Surah Pilihan".',
   },
   {
     q: 'Apakah aplikasi bisa digunakan offline?',
@@ -32,7 +33,7 @@ const faqs: FAQ[] = [
   },
   {
     q: 'Data saya hilang setelah ganti browser/perangkat. Kenapa?',
-    a: 'Saat ini favorit dan last read disimpan di perangkat masing-masing. Masuk dengan Google agar data bisa disinkronisasi di semua perangkat (segera hadir).',
+    a: 'Saat ini surah pilihan dan last read disimpan di perangkat masing-masing. Masuk dengan Google agar data bisa disinkronisasi di semua perangkat.',
   },
   {
     q: 'Dari mana sumber teks Al-Qur\'an dan tafsir?',
@@ -103,12 +104,13 @@ export default function BantuanPage() {
 
 function BackLink() {
   return (
-    <Link
-      href="/profile"
-      className="inline-flex items-center gap-1 text-xs text-[var(--bq-paper-500)] hover:text-[var(--bq-brown-500)] mb-4"
-    >
-      <Icon d={Icons.ChevronLeft} size={14} />
-      Profil
-    </Link>
+    <Breadcrumb
+      className="mb-4"
+      items={[
+        { label: 'Beranda', href: '/' },
+        { label: 'Profil', href: '/profile' },
+        { label: 'Bantuan' },
+      ]}
+    />
   );
 }

@@ -71,6 +71,13 @@ import {
   Code,
   Link2,
   Send,
+  Users,
+  UserCheck,
+  UserX,
+  Crown,
+  Ban,
+  ShieldCheck,
+  Filter,
 } from 'lucide-react';
 
 // ─── Icon type (accepts any Lucide icon) ───
@@ -168,6 +175,13 @@ export const Icons = {
   Code,
   Link2,
   Send,
+  Users,
+  UserCheck,
+  UserX,
+  Crown,
+  Ban,
+  ShieldCheck,
+  Filter,
 } as const;
 
 // ─── Placeholder ───

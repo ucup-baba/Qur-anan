@@ -5,12 +5,44 @@ import Link from 'next/link';
 import { Icon, Icons } from '@/presentation/components/icons';
 import { Button } from '@/presentation/components/ui/Button';
 import { usePreferences } from '@/presentation/hooks/usePreferences';
+import { useToast } from '@/presentation/components/ui/Toast';
+import { Breadcrumb } from '@/presentation/components/ui/Breadcrumb';
 
 type Permission = 'default' | 'granted' | 'denied' | 'unsupported';
 
 export default function NotifikasiPage() {
   const { prefs, update, hydrated } = usePreferences();
   const [perm, setPerm] = useState<Permission>('default');
+  const toast = useToast();
+
+  const sendTestNotif = async () => {
+    if (!('Notification' in window) || perm !== 'granted') {
+      toast.show('Izinkan notifikasi terlebih dahulu.', 'error');
+      return;
+    }
+    try {
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.ready;
+        await reg.showNotification('🕌 Pengingat Sholat (Tes)', {
+          body: 'Notifikasi berjalan dengan baik. Kamu akan menerima pengingat seperti ini saat waktu sholat tiba.',
+          icon: '/logo.png',
+          badge: '/logo.png',
+          tag: 'sholat-test',
+          vibrate: [200, 80, 200],
+          data: { openUrl: '/sholat' },
+        } as NotificationOptions & { vibrate?: number[] });
+      } else {
+        new Notification('🕌 Pengingat Sholat (Tes)', {
+          body: 'Notifikasi berjalan dengan baik.',
+          icon: '/logo.png',
+        });
+      }
+      toast.show('Notifikasi tes terkirim.', 'success');
+    } catch (err) {
+      console.error('Test notification failed', err);
+      toast.show('Gagal mengirim notifikasi tes.', 'error');
+    }
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -43,6 +75,19 @@ export default function NotifikasiPage() {
 
         {/* Permission Card */}
         <PermissionCard perm={perm} onRequest={requestPerm} />
+
+        {/* Test notification — only when permission granted */}
+        {perm === 'granted' && (
+          <div className="mb-6 p-4 rounded-2xl bg-white border border-[var(--bq-paper-200)] flex items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold text-[var(--bq-paper-800)]">Tes Notifikasi</div>
+              <div className="text-xs text-[var(--bq-paper-500)] mt-0.5">Kirim notifikasi sekarang untuk memastikan berfungsi.</div>
+            </div>
+            <Button variant="secondary" size="sm" onClick={sendTestNotif}>
+              Kirim Tes
+            </Button>
+          </div>
+        )}
 
         {/* Sholat */}
         <Section title="Pengingat Waktu Sholat">
@@ -190,12 +235,13 @@ function ToggleRow({
 
 function BackLink() {
   return (
-    <Link
-      href="/profile"
-      className="inline-flex items-center gap-1 text-xs text-[var(--bq-paper-500)] hover:text-[var(--bq-brown-500)] mb-4"
-    >
-      <Icon d={Icons.ChevronLeft} size={14} />
-      Profil
-    </Link>
+    <Breadcrumb
+      className="mb-4"
+      items={[
+        { label: 'Beranda', href: '/' },
+        { label: 'Profil', href: '/profile' },
+        { label: 'Notifikasi' },
+      ]}
+    />
   );
 }

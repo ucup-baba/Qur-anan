@@ -10,8 +10,10 @@ import {
   deleteBanner,
   type Banner,
 } from '@/infrastructure/firebase/banners';
+import { useToast } from '@/presentation/components/ui/Toast';
 
 export default function AdminBannerPage() {
+  const toast = useToast();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -38,7 +40,7 @@ export default function AdminBannerPage() {
     if (!file) return;
 
     if (banners.length >= 7) {
-      alert('Maksimal banner adalah 7 foto.');
+      toast.show('Maksimal banner adalah 7 foto.', 'error');
       return;
     }
 
@@ -51,7 +53,7 @@ export default function AdminBannerPage() {
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (e) {
       console.error('Failed to upload banner', e);
-      alert('Gagal mengunggah banner.');
+      toast.show('Gagal mengunggah banner.', 'error');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

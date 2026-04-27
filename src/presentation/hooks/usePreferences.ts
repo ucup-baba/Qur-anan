@@ -5,11 +5,14 @@ import { bumpLocalUpdatedAt } from '@/infrastructure/firebase/sync';
 
 const KEY = 'qu:preferences:v1';
 
+export type Locale = 'id' | 'ms' | 'en';
+
 export interface Preferences {
   arabicSize: 'sm' | 'md' | 'lg';
   showTransliteration: boolean;
   tajwidMode: boolean;
   theme: 'light' | 'system';
+  locale: Locale;
   notifSubuh: boolean;
   notifDzuhur: boolean;
   notifAshar: boolean;
@@ -23,6 +26,7 @@ const defaults: Preferences = {
   showTransliteration: true,
   tajwidMode: false,
   theme: 'light',
+  locale: 'id',
   notifSubuh: true,
   notifDzuhur: true,
   notifAshar: true,

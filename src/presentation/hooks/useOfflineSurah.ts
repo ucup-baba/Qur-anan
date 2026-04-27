@@ -9,6 +9,7 @@ interface PrecacheProgress {
 }
 
 const QURAN_API_BASE = 'https://equran.id/api/v2';
+const AUTO_PRECACHE_FLAG = 'bq-quran-text-precached-v1';
 
 export function useOfflineSurah() {
   const [apiProgress, setApiProgress] = useState<PrecacheProgress | null>(null);
@@ -19,6 +20,10 @@ export function useOfflineSurah() {
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    if (typeof window !== 'undefined' && localStorage.getItem(AUTO_PRECACHE_FLAG) === '1') {
+      setApiDone(true);
+    }
 
     navigator.serviceWorker.ready.then((reg) => {
       workerRef.current = reg.active;
@@ -33,19 +38,40 @@ export function useOfflineSurah() {
         else setApiProgress(upd);
       }
       if (d.type === 'PRECACHE_DONE') {
-        if (d.cacheName === 'audio') setAudioDone(true);
-        else setApiDone(true);
+        if (d.cacheName === 'audio') {
+          setAudioDone(true);
+        } else {
+          setApiDone(true);
+          try { localStorage.setItem(AUTO_PRECACHE_FLAG, '1'); } catch {}
+        }
       }
       if (d.type === 'CACHE_CLEARED') {
         setApiProgress(null);
         setAudioProgress(null);
         setApiDone(false);
         setAudioDone(false);
+        try { localStorage.removeItem(AUTO_PRECACHE_FLAG); } catch {}
       }
     };
 
     navigator.serviceWorker.addEventListener('message', handler);
     return () => navigator.serviceWorker.removeEventListener('message', handler);
+  }, []);
+
+  const autoPrecacheText = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    if (localStorage.getItem(AUTO_PRECACHE_FLAG) === '1') return;
+    if (!('serviceWorker' in navigator)) return;
+    const reg = await navigator.serviceWorker.ready;
+    const sw = reg.active;
+    if (!sw) return;
+    workerRef.current = sw;
+    const urls = [QURAN_API_BASE + '/surat'];
+    for (let i = 1; i <= 114; i++) {
+      urls.push(`${QURAN_API_BASE}/surat/${i}`);
+    }
+    setApiProgress({ done: 0, total: urls.length, cacheName: 'api' });
+    sw.postMessage({ type: 'PRECACHE_URLS', urls, cacheName: 'api' });
   }, []);
 
   const downloadAllSurahMeta = useCallback(async () => {
@@ -91,5 +117,6 @@ export function useOfflineSurah() {
     downloadAllSurahMeta,
     downloadAllAudio,
     clearOfflineCache,
+    autoPrecacheText,
   };
 }

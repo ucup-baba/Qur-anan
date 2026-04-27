@@ -11,6 +11,8 @@ import {
   getAdjacentArticles,
   type Article,
 } from '@/infrastructure/firebase/articles';
+import { useToast } from '@/presentation/components/ui/Toast';
+import { Breadcrumb } from '@/presentation/components/ui/Breadcrumb';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,6 +21,7 @@ interface PageProps {
 export default function ArticleDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
+  const toast = useToast();
 
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,6 +135,15 @@ export default function ArticleDetailPage({ params }: PageProps) {
 
       {/* ── Article body ── */}
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px 40px' }}>
+        <Breadcrumb
+          className="mt-5 mb-4"
+          items={[
+            { label: 'Beranda', href: '/' },
+            { label: 'Yayasan', href: '/yayasan' },
+            { label: 'Berita', href: '/yayasan' },
+            { label: article.title },
+          ]}
+        />
         {/* Meta */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
@@ -186,7 +198,7 @@ export default function ArticleDetailPage({ params }: PageProps) {
                 navigator.share({ title: article.title, url: window.location.href });
               } else {
                 navigator.clipboard.writeText(window.location.href);
-                alert('Link berhasil disalin!');
+                toast.show('Link berhasil disalin!', 'success');
               }
             }}
             style={{

@@ -7,6 +7,8 @@ initializeApp();
 
 const db = getFirestore();
 
+export { listUsers, setUserRole, setUserBlocked, deleteUserAccount } from './admin';
+
 // Runs every minute — checks all users' prayer times and sends FCM if it's time
 export const sendPrayerNotifications = onSchedule({
   schedule: '* * * * *',
