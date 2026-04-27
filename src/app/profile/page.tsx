@@ -15,6 +15,7 @@ interface MenuItem {
   desc: string;
   href: string;
   tone: 'brown' | 'gold';
+  adminOnly?: boolean;
 }
 
 const menuItems: MenuItem[] = [
@@ -31,6 +32,14 @@ const menuItems: MenuItem[] = [
     desc: 'Pengingat sholat & ayat',
     href: '/profile/notifikasi',
     tone: 'gold',
+  },
+  {
+    icon: Icons.Pencil,
+    label: 'Panel Admin',
+    desc: 'Input & kelola berita yayasan',
+    href: '/admin/berita',
+    tone: 'brown',
+    adminOnly: true,
   },
   {
     icon: Icons.Info,
@@ -111,7 +120,9 @@ export default function ProfilePage() {
         )}
 
         <div className="space-y-4">
-          {menuItems.map((item) => (
+          {menuItems
+            .filter(item => !item.adminOnly || (item.adminOnly && user?.email === 'baitulqowwam123@gmail.com'))
+            .map((item) => (
             <Link key={item.label} href={item.href} className="no-underline block">
               <Card className="p-4 flex items-center gap-4 hover:border-[var(--bq-brown-300)] transition-colors">
                 <div

@@ -48,7 +48,11 @@ export const metadata: Metadata = {
     icon: '/logo.png',
     apple: '/logo.png',
   },
-  keywords: ['quran', 'al-quran', 'sholat', 'kiblat', 'islami', 'yayasan baitul qowwam'],
+  keywords: [
+    'quran', 'al-quran', 'sholat', 'kiblat', 'islami', 
+    'yayasan baitul qowwam', 'baitul qowwam', 'pondok pesantren baitul qowwam', 
+    'quranan', 'quranan qu', 'baca quran online'
+  ],
   openGraph: {
     title: "Qur'anan - Baitul Qowwam",
     description: "Baca Al-Qur'an, jadwal sholat, dan arah kiblat secara online.",

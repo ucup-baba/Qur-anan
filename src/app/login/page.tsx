@@ -13,11 +13,16 @@ export default function LoginPage() {
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const ADMIN_EMAIL = 'baitulqowwam123@gmail.com';
   const redirect = searchParams.get('redirect') || '/';
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace(redirect);
+      if (user.email === ADMIN_EMAIL) {
+        router.replace('/admin/berita');
+      } else {
+        router.replace(redirect);
+      }
     }
   }, [user, loading, router, redirect]);
 

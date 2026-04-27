@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon, Icons } from '../icons';
 
-const NAV_ITEMS = [
+const USER_NAV_ITEMS = [
   { path: '/',        label: 'Beranda',  icon: Icons.Home },
   { path: '/quran',   label: "Qur'an",   icon: Icons.Book },
   { path: '/sholat',  label: 'Sholat',   icon: Icons.Clock },
@@ -13,14 +13,31 @@ const NAV_ITEMS = [
   { path: '/profile', label: 'Profile',  icon: Icons.User },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { path: '/admin/banner', label: 'Banner',  icon: Icons.ImageIcon },
+  { path: '/admin/berita', label: 'Artikel', icon: Icons.Newspaper },
+  { path: '/admin/donasi', label: 'Donasi',  icon: Icons.Heart },
+  { path: '/profile',      label: 'Profile', icon: Icons.User }, // To allow exiting admin easily
+];
+
 export const BottomNav: React.FC = () => {
   const pathname = usePathname();
 
-  const isActive = (p: string) => p === '/' ? pathname === '/' : pathname.startsWith(p);
+  const isAdminRoute = pathname.startsWith('/admin');
+  const itemsToRender = isAdminRoute ? ADMIN_NAV_ITEMS : USER_NAV_ITEMS;
+
+  const isActive = (p: string) => {
+    // For root, exact match
+    if (p === '/') return pathname === '/';
+    // For admin sub-routes, use exact match to avoid highlighting both
+    if (isAdminRoute && p.startsWith('/admin')) return pathname === p;
+    // Otherwise, startsWith
+    return pathname.startsWith(p);
+  };
 
   return (
     <div className="md:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-4 right-4 bg-white/90 border border-[#F1E9DB] px-2 py-3 flex justify-around items-center z-50 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-300 ease-in-out">
-      {NAV_ITEMS.map(item => {
+      {itemsToRender.map(item => {
         const active = isActive(item.path);
         return (
           <Link

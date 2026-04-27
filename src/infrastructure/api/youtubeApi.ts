@@ -19,7 +19,19 @@ function toTitleCase(str: string): string {
 export async function getLatestKajianVideos(count = 5): Promise<YoutubeVideo[]> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
-  if (!apiKey || !channelId) return [];
+  
+  // Jika API key tidak ada, kembalikan video dummy/contoh agar UI tidak kosong
+  if (!apiKey || !channelId) {
+    return [
+      {
+        id: 'dummy_1',
+        title: 'Contoh Kajian (Mode Testing)',
+        thumbnail: 'https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg', // Gambar contoh
+        publishedAt: new Date().toISOString(),
+        url: 'https://www.youtube.com/',
+      }
+    ];
+  }
 
   try {
     // Fetch more to account for shorts/short videos that get filtered out

@@ -5,7 +5,11 @@ import { SectionHeader } from '@/presentation/components/ui/SectionHeader';
 import { Icons } from '@/presentation/components/icons';
 import { BannerSlider } from '@/presentation/components/yayasan/BannerSlider';
 import { KajianCard } from '@/presentation/components/yayasan/KajianCard';
+import { ArticleSlider } from '@/presentation/components/yayasan/ArticleSlider';
 import { getLatestKajianVideos } from '@/infrastructure/api/youtubeApi';
+import { getBanners } from '@/infrastructure/firebase/banners';
+
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Tentang Yayasan - Qur-anan',
@@ -13,7 +17,14 @@ export const metadata = {
 };
 
 export default async function YayasanPage() {
-  const kajianVideos = await getLatestKajianVideos(5);
+  const [kajianVideos, dynamicBanners] = await Promise.all([
+    getLatestKajianVideos(5),
+    getBanners(7)
+  ]);
+
+  const bannerImages = dynamicBanners.length > 0 
+    ? dynamicBanners.map(b => ({ src: b.imageUrl, alt: 'Banner Yayasan' }))
+    : [{ src: '/banner/IMG_2578.jpg', alt: 'Kegiatan Baitul Qowwam' }];
 
   return (
     <div>
@@ -42,9 +53,7 @@ export default async function YayasanPage() {
               </div>
             </div>
             <BannerSlider
-              images={[
-                { src: '/banner/IMG_2578.jpg', alt: 'Kegiatan Baitul Qowwam' },
-              ]}
+              images={bannerImages}
               aspect="4/3"
             />
           </div>
@@ -59,6 +68,9 @@ export default async function YayasanPage() {
         </div>
       </div>
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-12">
+        <SectionHeader eyebrow="Informasi" title="Berita terbaru" subtitle="Kabar & artikel dari yayasan." />
+        <ArticleSlider />
+
         <SectionHeader eyebrow="Kegiatan" title="Program rutin" subtitle="Terbuka untuk umum." />
         <div className="grid grid-cols-1 gap-5 mb-12">
           <KajianCard videos={kajianVideos} />
