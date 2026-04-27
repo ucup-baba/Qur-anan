@@ -3,12 +3,26 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 
-const REKENING = {
-  bank: 'BPD Syariah',
-  subtitle: 'Bank Jogja',
-  no: '801211018056',
-  name: 'Panti Asuhan Yatim Miskin Baitul Qowwam',
-};
+const REKENINGS = [
+  {
+    id: 'bpd',
+    bank: 'BPD Syariah',
+    subtitle: 'Bank Jogja',
+    no: '801211018056',
+    name: 'Panti Asuhan Yatim Miskin Baitul Qowwam',
+    gradient: 'linear-gradient(135deg, #1A3C6E 0%, #2A5490 60%, #1A3C6E 100%)',
+    shadow: '0 8px 24px rgba(26, 60, 110, 0.25)',
+  },
+  {
+    id: 'bsi',
+    bank: 'Bank Syariah Indonesia',
+    subtitle: 'KODE BANK 451',
+    no: '0307075359',
+    name: 'An. Agus T. QQ. Baitul Qowwam',
+    gradient: 'linear-gradient(135deg, #00A39D 0%, #008781 60%, #006B66 100%)',
+    shadow: '0 8px 24px rgba(0, 163, 157, 0.25)',
+  }
+];
 
 const WA_NUMBER = '6285643386134';
 const WA_DISPLAY = '0856-4338-6134';
@@ -76,68 +90,86 @@ export function RekeningSection() {
         </h3>
       </div>
 
-      {/* Rekening Bank Card */}
+      {/* Rekening Bank Cards (Swipeable) */}
       <div style={{
-        background: 'linear-gradient(135deg, #1A3C6E 0%, #2A5490 60%, #1A3C6E 100%)',
-        borderRadius: 18,
-        padding: '20px 22px',
-        position: 'relative',
-        overflow: 'hidden',
-        marginBottom: 14,
-        boxShadow: '0 8px 24px rgba(26, 60, 110, 0.25)',
+        display: 'flex',
+        gap: 12,
+        overflowX: 'auto',
+        scrollSnapType: 'x mandatory',
+        scrollbarWidth: 'none',
+        paddingBottom: 16,
+        marginBottom: -2,
+        marginRight: -20,
+        marginLeft: -20,
+        paddingLeft: 20,
+        paddingRight: 20,
       }}>
-        {/* Decorative blobs */}
-        <div style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%)' }} />
-        <div style={{ position: 'absolute', left: -20, bottom: -30, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%)' }} />
-
-        {/* Top row: bank logo + chip */}
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
-          <div>
-            <div style={{ fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', fontWeight: 700, marginBottom: 3 }}>
-              Transfer Bank
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', letterSpacing: -0.2 }}>
-              {REKENING.bank}
-            </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>
-              {REKENING.subtitle}
-            </div>
-          </div>
-          {/* Chip */}
-          <div style={{
-            width: 38, height: 28, borderRadius: 5,
-            background: 'linear-gradient(135deg, #FFD580 0%, #C9A24E 100%)',
-            position: 'relative', flexShrink: 0,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+        {REKENINGS.map((rek) => (
+          <div key={rek.id} style={{
+            background: rek.gradient,
+            borderRadius: 18,
+            padding: '20px 22px',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: rek.shadow,
+            flexShrink: 0,
+            width: '85%',
+            scrollSnapAlign: 'center',
           }}>
-            <div style={{ position: 'absolute', inset: '4px 6px', border: '1px solid rgba(0,0,0,0.15)', borderRadius: 2 }} />
-            <div style={{ position: 'absolute', top: '50%', left: '20%', right: '20%', height: 1, background: 'rgba(0,0,0,0.15)' }} />
-          </div>
-        </div>
+            {/* Decorative blobs */}
+            <div style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%)' }} />
+            <div style={{ position: 'absolute', left: -20, bottom: -30, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%)' }} />
 
-        {/* Account number */}
-        <div style={{
-          fontFamily: 'var(--bq-font-mono)',
-          fontSize: 24, fontWeight: 700,
-          color: '#fff', letterSpacing: 2.5,
-          marginBottom: 14,
-          position: 'relative',
-        }}>
-          {REKENING.no.replace(/(\d{4})/g, '$1 ').trim()}
-        </div>
-
-        {/* Bottom: name + copy */}
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 700, marginBottom: 2 }}>
-              Atas Nama
+            {/* Top row: bank logo + chip */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 22 }}>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)', fontWeight: 700, marginBottom: 3 }}>
+                  Transfer Bank
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', letterSpacing: -0.2 }}>
+                  {rek.bank}
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>
+                  {rek.subtitle}
+                </div>
+              </div>
+              {/* Chip */}
+              <div style={{
+                width: 38, height: 28, borderRadius: 5,
+                background: 'linear-gradient(135deg, #FFD580 0%, #C9A24E 100%)',
+                position: 'relative', flexShrink: 0,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              }}>
+                <div style={{ position: 'absolute', inset: '4px 6px', border: '1px solid rgba(0,0,0,0.15)', borderRadius: 2 }} />
+                <div style={{ position: 'absolute', top: '50%', left: '20%', right: '20%', height: 1, background: 'rgba(0,0,0,0.15)' }} />
+              </div>
             </div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', lineHeight: 1.3 }}>
-              {REKENING.name}
+
+            {/* Account number */}
+            <div style={{
+              fontFamily: 'var(--bq-font-mono)',
+              fontSize: 24, fontWeight: 700,
+              color: '#fff', letterSpacing: 2.5,
+              marginBottom: 14,
+              position: 'relative',
+            }}>
+              {rek.no.replace(/(\d{4})/g, '$1 ').trim()}
+            </div>
+
+            {/* Bottom: name + copy */}
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 700, marginBottom: 2 }}>
+                  Atas Nama
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#fff', lineHeight: 1.3 }}>
+                  {rek.name}
+                </div>
+              </div>
+              <CopyButton text={rek.no} />
             </div>
           </div>
-          <CopyButton text={REKENING.no} />
-        </div>
+        ))}
       </div>
 
       {/* Divider with "ATAU" */}
